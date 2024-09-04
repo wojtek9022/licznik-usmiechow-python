@@ -20,11 +20,8 @@ thickness = 3
 lineType = 2
 
 smiles_detected = 0
-doCount = True
-timerStart = 0
-timerEnd = 0
-TIME_TO_START_COUNTING = 1
-
+TIME_TO_START_COUNTING = 2
+smile_active = True
 while True:
     # Read the frame
     check, frame = video.read()
@@ -38,16 +35,16 @@ while True:
         # Detect the Smile
         smile = smile_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=10)
         # Increase smile counter by number of detected smiles
-        if len(smile) > 0 and doCount == True:
-            doCount = False
-            timerStart = time.time()
-            smiles_detected += len(smile)
-
-        # Stop timer and let smile count
-        timerEnd = time.time()
-        total = timerStart - timerEnd
-        if total < -TIME_TO_START_COUNTING:
-            doCount = True
+        if len(smile) > 0:
+            if not smile_active:
+                current_time = time.time()
+                if current_time - last_smile_time > TIME_TO_START_COUNTING:
+                    smiles_detected += 1
+                    smile_active = True
+        else:
+            if smile_active:
+                last_smile_time = time.time()
+                smile_active = False
 
         # Draw the rectangle around detected smile
         for x, y, w, h in smile:
