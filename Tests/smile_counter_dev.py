@@ -6,7 +6,7 @@ import logging
 DATASET_PHOTOS_INPUT_PATH = "./input/378x504-positive"
 DEFAULT_OUTPUT_FOLDER_PATH = "./output/"
 DEFAULT_OUTPUT_FILE_EXTENSION = "jpg"
-LOG_OUTPUTH_PATH = DEFAULT_OUTPUT_FOLDER_PATH + "detection.log"
+LOG_OUTPUT_PATH = DEFAULT_OUTPUT_FOLDER_PATH + "detection.log"
 SMILE_CLASSIFIER_PATH = "../haar_classifiers/haarcascade_smile.xml"
 FRONTAL_FACE_CLASSIFIER_PATH = "../haar_classifiers/haarcascade_frontalface_default.xml"
 
@@ -30,7 +30,7 @@ def _create_output_path(base_dir: str, filename: str, extension: str) -> str:
 
 def main():
     # Logger config
-    logging.basicConfig(filename=LOG_OUTPUTH_PATH, level=logging.INFO)
+    logging.basicConfig(filename=LOG_OUTPUT_PATH, level=logging.INFO)
 
     # Load the cascade
     smile_cascade = cv2.CascadeClassifier(SMILE_CLASSIFIER_PATH)
