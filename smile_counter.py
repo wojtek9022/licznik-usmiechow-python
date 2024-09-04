@@ -1,6 +1,9 @@
 import cv2
 import time
 
+# Constants
+TIME_TO_START_COUNTING = 2
+
 # Load the cascade
 smile_cascade = cv2.CascadeClassifier("haar_classifiers/haarcascade_smile.xml")
 face_cascade = cv2.CascadeClassifier("haar_classifiers/haarcascade_frontalface_default.xml")
@@ -13,14 +16,13 @@ video = cv2.VideoCapture(0)
 
 # Text configuration
 font = cv2.FONT_HERSHEY_SIMPLEX
-textPosition = (0,0)
-fontScale = 1
-fontColor = (0,0,0)
-thickness = 3
-lineType = 2
+text_position = (0,0)
+font_scale = 1
+font_color = (0,0,0)
+font_thickness = 3
+font_line_type = 2
 
 smiles_detected = 0
-TIME_TO_START_COUNTING = 2
 smile_active = True
 while True:
     # Read the frame
@@ -53,17 +55,17 @@ while True:
         # Get img size
         h, w, c = frame.shape
         # Set new img position depending on img size
-        textPosition = (round(w/4), round(h/8))
+        text_position = (round(w/4), round(h/8))
         # Text to show
-        textToShow = "Wykryto usmiechow: " + str(smiles_detected)
+        text_to_show = "Detected smiles: " + str(smiles_detected)
         # Add smile count
-        cv2.putText(img, textToShow,
-                    textPosition,
+        cv2.putText(img, text_to_show,
+                    text_position,
                     font,
-                    fontScale,
-                    fontColor,
-                    thickness,
-                    lineType)
+                    font_scale,
+                    font_color,
+                    font_thickness,
+                    font_line_type)
 
     # Display output
     cv2.imshow('smile detect', frame)
