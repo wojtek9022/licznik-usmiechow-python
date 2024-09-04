@@ -2,21 +2,42 @@ import cv2
 import os
 import logging
 
+# FIXME: Create a config file
+DATASET_PHOTOS_INPUT_PATH = "./input/378x504-positive"
+DEFAULT_OUTPUT_FOLDER_PATH = "./output/"
+DEFAULT_OUTPUT_FILE_EXTENSION = "jpg"
+LOG_OUTPUTH_PATH = DEFAULT_OUTPUT_FOLDER_PATH + "detection.log"
+SMILE_CLASSIFIER_PATH = "../haar_classifiers/haarcascade_smile.xml"
+FRONTAL_FACE_CLASSIFIER_PATH = "../haar_classifiers/haarcascade_frontalface_default.xml"
+
+# FIXME: This code has too many redundant comments
 # Logger init
 logger = logging.getLogger(__name__)
+
+
+def _create_output_path(base_dir: str, filename: str, extension: str) -> str:
+    '''
+    Creates proper output path for photos with detected smiles.
+
+    :param: base_dir [M] - Base output directory path
+    :param: filename [M] - Chosen name of the file.
+    :param: extension [M] - Extension that will be used to save graphic file.
+    :return: output_path - Created output path for the file.
+    '''
+    output_path = os.path.join(base_dir, f"{filename}.{extension}")
+    return output_path
+
+
 def main():
     # Logger config
-    logging.basicConfig(filename='./output/detection.log', level=logging.INFO)
+    logging.basicConfig(filename=LOG_OUTPUTH_PATH, level=logging.INFO)
 
     # Load the cascade
-    smile_cascade = cv2.CascadeClassifier("../haar_classifiers/haarcascade_smile.xml")
-    face_cascade = cv2.CascadeClassifier("../haar_classifiers/haarcascade_frontalface_default.xml")
-
-    # Photos path
-    pathname = "./input/378x504-positive"
+    smile_cascade = cv2.CascadeClassifier(SMILE_CLASSIFIER_PATH)
+    face_cascade = cv2.CascadeClassifier(FRONTAL_FACE_CLASSIFIER_PATH)
 
     # Creating total path of the photo
-    photos = [os.path.join(pathname, photo) for photo in os.listdir(pathname)]
+    photos = [os.path.join(DATASET_PHOTOS_INPUT_PATH, photo) for photo in os.listdir(DATASET_PHOTOS_INPUT_PATH)]
 
     detected_smiles = 0
 
@@ -42,7 +63,7 @@ def main():
 
         # Display output
         cv2.imshow('smile detect', img)
-        filename = "./output/" + photo_name + ".jpg"
+        filename = _create_output_path(DEFAULT_OUTPUT_FOLDER_PATH, photo_name, DEFAULT_OUTPUT_FILE_EXTENSION)
         cv2.imwrite(filename, img)
 
         # Stop if escape key is pressed
@@ -50,9 +71,8 @@ def main():
         if key == 27:
             break
 
-    print("Analyzed ", len(photos), " photos")
+    # NOTE: Logger should work like print if appropriate log level is set.
     logger.info("Analyzed " + str(len(photos)) + " photos")
-    print("Detected ", detected_smiles," smiles")
     logger.info("Detected " + str(detected_smiles) + " smiles")
     cv2.destroyAllWindows()
 
