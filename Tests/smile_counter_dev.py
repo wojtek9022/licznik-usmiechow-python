@@ -1,19 +1,29 @@
 import cv2
 import os
 import logging
+import time
+from config_file_reader import read_config
 
-# FIXME: Create a config file
-DATASET_PHOTOS_INPUT_PATH = "./input/378x504-positive"
-DEFAULT_OUTPUT_FOLDER_PATH = "./output/"
-DEFAULT_OUTPUT_FILE_EXTENSION = "jpg"
-LOG_OUTPUT_PATH = DEFAULT_OUTPUT_FOLDER_PATH + "detection.log"
-SMILE_CLASSIFIER_PATH = "../haar_classifiers/haarcascade_smile.xml"
-FRONTAL_FACE_CLASSIFIER_PATH = "../haar_classifiers/haarcascade_frontalface_default.xml"
+# Read config file
+config_data = read_config(file_path='config.ini', section='DetectingSmilesInPhotos')
 
 # FIXME: This code has too many redundant comments
 # Logger init
 logger = logging.getLogger(__name__)
-
+logger.setLevel(logging.INFO)
+# Create handler to log to file
+file_handler = logging.FileHandler(config_data['LOG_OUTPUT_PATH'])
+file_handler.setLevel(logging.INFO)
+# Create handler to log to console
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+# Create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+# Add handlers to logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 def _create_output_path(base_dir: str, filename: str, extension: str) -> str:
     '''
@@ -28,18 +38,28 @@ def _create_output_path(base_dir: str, filename: str, extension: str) -> str:
     return output_path
 
 
-def main():
-    # Logger config
-    logging.basicConfig(filename=LOG_OUTPUT_PATH, level=logging.INFO)
+def save_output_images(photo_name: str, img: cv2.Mat):
+    if config_data['SAVE_OUTPUT_IMAGES']:
+        filename = _create_output_path(config_data['DEFAULT_OUTPUT_FOLDER_PATH'], photo_name, config_data['DEFAULT_OUTPUT_FILE_EXTENSION'])
+        cv2.imwrite(filename, img)
 
+
+def show_output_images(window_name: str, img: cv2.Mat):
+    if config_data['SHOW_OUTPUT_IMAGES']:
+        cv2.imshow(window_name, img)
+
+
+def main():
     # Load the cascade
-    smile_cascade = cv2.CascadeClassifier(SMILE_CLASSIFIER_PATH)
-    face_cascade = cv2.CascadeClassifier(FRONTAL_FACE_CLASSIFIER_PATH)
+    smile_cascade = cv2.CascadeClassifier(config_data['SMILE_CLASSIFIER_PATH'])
+    face_cascade = cv2.CascadeClassifier(config_data['FRONTAL_FACE_CLASSIFIER_PATH'])
 
     # Creating total path of the photo
-    photos = [os.path.join(DATASET_PHOTOS_INPUT_PATH, photo) for photo in os.listdir(DATASET_PHOTOS_INPUT_PATH)]
+    photos = [os.path.join(config_data['DATASET_PHOTOS_INPUT_PATH'], photo) for photo in os.listdir(config_data['DATASET_PHOTOS_INPUT_PATH'])]
 
     detected_smiles = 0
+
+    timer_start_time = time.time()
 
     for photo in photos:
         photo_name = os.path.splitext(os.path.basename(photo))[0]
@@ -49,7 +69,7 @@ def main():
         face = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4)
         # Draw the rectangle around each face
         for (x, y, w, h) in face:
-            img = cv2.rectangle(img, (x,y), (x+w, y+h), (0, 0, 255), 3)
+            img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 3)
             # Detect the Smile
             smile = smile_cascade.detectMultiScale(gray, scaleFactor=1.4, minNeighbors=10)
             if len(smile) > 0:
@@ -58,23 +78,28 @@ def main():
             else:
                 logger.info("Do not detected smile in photo with filename: " + photo_name)
             # Draw the rectangle around detected smile
-            for x, y, w, h in smile:
-                img = cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 3)
+            for x_, y_, w_, h_ in smile:
+                img = cv2.rectangle(img, (x_, y_), (x_ + w_, y_ + h_), (255, 0, 0), 3)
 
         # Display output
-        cv2.imshow('smile detect', img)
-        filename = _create_output_path(DEFAULT_OUTPUT_FOLDER_PATH, photo_name, DEFAULT_OUTPUT_FILE_EXTENSION)
-        cv2.imwrite(filename, img)
+        show_output_images(window_name = config_data['DEFAULT_IMAGE_WINDOW_NAME'], img = img)
+
+        save_output_images(photo_name=photo_name, img=img)
 
         # Stop if escape key is pressed
         key = cv2.waitKey(30) & 0xff
         if key == 27:
             break
 
+    timer_stop_time = time.time()
+    total_detecting_time = timer_stop_time - timer_start_time
+
     # NOTE: Logger should work like print if appropriate log level is set.
     logger.info("Analyzed " + str(len(photos)) + " photos")
     logger.info("Detected " + str(detected_smiles) + " smiles")
+    logger.info("Detecting smiles took: " + str(total_detecting_time))
     cv2.destroyAllWindows()
+
 
 if __name__ == '__main__':
     main()
