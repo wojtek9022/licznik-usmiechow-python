@@ -35,7 +35,7 @@ while True:
     for (x, y, w, h) in face:
         img = cv2.rectangle(frame, (x,y), (x+w, y+h), (0, 0, 255), 3)
         # Detect the Smile
-        smile = smile_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=10)
+        smile = smile_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=20)
         # Increase smile counter by number of detected smiles
         if len(smile) > 0:
             if not smile_active:
@@ -52,20 +52,20 @@ while True:
         for x, y, w, h in smile:
             img = cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 3)
 
-        # Get img size
-        h, w, c = frame.shape
-        # Set new img position depending on img size
-        text_position = (round(w/4), round(h/8))
-        # Text to show
-        text_to_show = "Detected smiles: " + str(smiles_detected)
-        # Add smile count
-        cv2.putText(img, text_to_show,
-                    text_position,
-                    font,
-                    font_scale,
-                    font_color,
-                    font_thickness,
-                    font_line_type)
+    # Get img size
+    h, w, c = frame.shape
+    # Set new img position depending on img size
+    text_position = (round(w/4), round(h/8))
+    # Text to show
+    text_to_show = "Detected smiles: " + str(smiles_detected)
+    # Add smile count
+    cv2.putText(img, text_to_show,
+                text_position,
+                font,
+                font_scale,
+                font_color,
+                font_thickness,
+                font_line_type)
 
     # Display output
     cv2.imshow('smile detect', frame)
