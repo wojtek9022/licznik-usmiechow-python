@@ -43,10 +43,10 @@ def smile_detection(positive_dataset = True):
     # Creating total path of the photo
     if positive_dataset:
         photos = [os.path.join(config_data['DATASET_PHOTOS_INPUT_PATH'], photo) for photo in
-                os.listdir(config_data['DATASET_PHOTOS_INPUT_PATH'])]
+                  os.listdir(config_data['DATASET_PHOTOS_INPUT_PATH']) if photo.lower().endswith(config_data['DEFAULT_OUTPUT_FILE_EXTENSION'])]
     else:
         photos = [os.path.join(config_data['NEGATIVE_DATASET_PHOTOS_INPUT_PATH'], photo) for photo in
-                os.listdir(config_data['NEGATIVE_DATASET_PHOTOS_INPUT_PATH'])]
+                  os.listdir(config_data['NEGATIVE_DATASET_PHOTOS_INPUT_PATH']) if photo.lower().endswith(config_data['DEFAULT_OUTPUT_FILE_EXTENSION'])]
 
     detected_smiles = 0
 
@@ -59,26 +59,29 @@ def smile_detection(positive_dataset = True):
         # Draw the rectangle around each face
         for (x, y, w, h) in face:
             img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 3)
+            # Crop to detected face
+            cropped_face_gray = gray[y:y+h, x:x+w]
             # Detect the Smile
-            smile = smile_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=10)
-            if len(smile) > 0:
-                logger.info("Smile detected in photo with filename: " + photo_name)
-                detected_smiles += 1
-            else:
-                logger.info("Do not detected smile in photo with filename: " + photo_name)
+            smile = smile_cascade.detectMultiScale(cropped_face_gray, scaleFactor=1.8, minNeighbors=20)
+
             # Draw the rectangle around detected smile
             for x_, y_, w_, h_ in smile:
-                img = cv2.rectangle(img, (x_, y_), (x_ + w_, y_ + h_), (255, 0, 0), 3)
+                img = cv2.rectangle(img, (x_ + x, y_ + y), (x_ + w_  + x, y_ + h_ + y), (255, 0, 0), 3)
+                # Save cropped gray face
+                cropped_face_gray = cv2.rectangle(cropped_face_gray, (x_, y_), (x_ + w_, y_ + h_), (255, 0, 0), 3)
+                cropped_face_filename = "croppedface" + str(x_ + y_)
+                save_output_images(cropped_face_filename, cropped_face_gray)
+
+                if len(smile) > 0:
+                    logger.info("Smile detected in photo with filename: " + photo_name)
+                    detected_smiles += 1
+                else:
+                    logger.info("Do not detected smile in photo with filename: " + photo_name)
 
         # Display output
         show_output_images(window_name = config_data['DEFAULT_IMAGE_WINDOW_NAME'], img = img)
 
         save_output_images(photo_name=photo_name, img=img)
-
-        # Stop if escape key is pressed
-        key = cv2.waitKey(30) & 0xff
-        if key == 27:
-            break
 
     logger.info("Analyzed " + str(len(photos)) + " photos")
     logger.info("Detected " + str(detected_smiles) + " smiles")
@@ -87,7 +90,7 @@ def smile_detection(positive_dataset = True):
 def time_counting(func):
     timer_start_time = time.time()
 
-    func(False)
+    func(positive_dataset = False)
 
     timer_stop_time = time.time()
     total_detecting_time = timer_stop_time - timer_start_time
