@@ -18,12 +18,18 @@ video = cv2.VideoCapture(0)
 font = cv2.FONT_HERSHEY_SIMPLEX
 text_position = (0,0)
 font_scale = 1
-font_color = (0,0,0)
+font_color = (255,0,0)
 font_thickness = 3
 font_line_type = 2
 
 smiles_detected = 0
 smile_active = True
+frames = 0
+prev_frame_time = 0
+new_frame_time = 0
+frame_counter = 0
+fps = 0
+
 while True:
     # Read the frame
     check, frame = video.read()
@@ -31,11 +37,12 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # Detect the faces
     face = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4)
+
     # Draw the rectangle around each face
     for (x, y, w, h) in face:
         img = cv2.rectangle(frame, (x,y), (x+w, y+h), (0, 0, 255), 3)
         # Detect the Smile
-        smile = smile_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=10)
+        smile = smile_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=20)
         # Increase smile counter by number of detected smiles
         if len(smile) > 0:
             if not smile_active:
@@ -52,12 +59,28 @@ while True:
         for x, y, w, h in smile:
             img = cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 3)
 
+        new_frame_time = time.time()
+
+        if frame_counter >= 60:
+            if frame_counter == 60:
+                fps = frames / 60
+                if len(smile) > 0:
+                    print("Smile detected, fps: " + str(fps))
+                else:
+                    print("Smile not detected, fps: " + str(fps))
+            frame_counter = 0
+            frames = 0
+        else:
+            frames += 1 / (new_frame_time - prev_frame_time)
+            prev_frame_time = new_frame_time
+            frame_counter += 1
+
         # Get img size
         h, w, c = frame.shape
         # Set new img position depending on img size
         text_position = (round(w/4), round(h/8))
         # Text to show
-        text_to_show = "Detected smiles: " + str(smiles_detected)
+        text_to_show = "Detected smiles: " + str(smiles_detected) + " fps: " + str(round(fps))
         # Add smile count
         cv2.putText(img, text_to_show,
                     text_position,
@@ -66,7 +89,7 @@ while True:
                     font_color,
                     font_thickness,
                     font_line_type)
-
+    frame_counter += 1
     # Display output
     cv2.imshow('smile detect', frame)
 
