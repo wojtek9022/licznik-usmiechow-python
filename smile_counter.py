@@ -2,102 +2,129 @@ import cv2
 import time
 
 # Constants
-TIME_TO_START_COUNTING = 2
+TIME_TO_START_COUNTING = 0.8
+FACE_SCALE_FACTOR = 1.1
+FACE_MIN_NEIGHBOURS = 10
+SMILE_SCALE_FACTOR = 1.05
+SMILE_MIN_NEIGHBOURS = 15
 
-# Load the cascade
-smile_cascade = cv2.CascadeClassifier("haar_classifiers/haarcascade_smile.xml")
-face_cascade = cv2.CascadeClassifier("haar_classifiers/haarcascade_frontalface_default.xml")
+def load_cascades():
+    smile_cascade = cv2.CascadeClassifier("haar_classifiers/haarcascade_smile.xml")
+    face_cascade = cv2.CascadeClassifier("haar_classifiers/haarcascade_frontalface_default.xml")
+    return smile_cascade, face_cascade
 
-# To capture video from webcam.
-video = cv2.VideoCapture(0)
+def initialize_video_capture(source=0):
+    return cv2.VideoCapture(source)
 
-# To use a video file as input
-# video = cv2.VideoCapture('filename.mp4')
+def convert_to_grayscale(frame):
+    return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-# Text configuration
-font = cv2.FONT_HERSHEY_SIMPLEX
-text_position = (0,0)
-font_scale = 1
-font_color = (255,0,0)
-font_thickness = 3
-font_line_type = 2
+def detect_faces(face_cascade, gray_frame):
+    return face_cascade.detectMultiScale(gray_frame, scaleFactor=FACE_SCALE_FACTOR, minNeighbors=FACE_MIN_NEIGHBOURS)
 
-smiles_detected = 0
-smile_active = True
-frames = 0
-prev_frame_time = 0
-new_frame_time = 0
-frame_counter = 0
-fps = 0
+def detect_smiles(smile_cascade, gray_frame):
+    return smile_cascade.detectMultiScale(gray_frame, scaleFactor=SMILE_SCALE_FACTOR, minNeighbors=SMILE_MIN_NEIGHBOURS)
 
-while True:
-    # Read the frame
-    check, frame = video.read()
-    # Convert to grayscale
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    # Detect the faces
-    face = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4)
+def draw_rectangles(frame, coordinates, color, thickness=3):
+    for (x, y, w, h) in coordinates:
+        cv2.rectangle(frame, (x, y), (x + w, y + h), color, thickness)
 
-    # Draw the rectangle around each face
-    for (x, y, w, h) in face:
-        img = cv2.rectangle(frame, (x,y), (x+w, y+h), (0, 0, 255), 3)
-        # Detect the Smile
-        smile = smile_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=20)
-        # Increase smile counter by number of detected smiles
-        if len(smile) > 0:
-            if not smile_active:
-                current_time = time.time()
-                if current_time - last_smile_time > TIME_TO_START_COUNTING:
-                    smiles_detected += 1
-                    smile_active = True
-        else:
-            if smile_active:
-                last_smile_time = time.time()
-                smile_active = False
+# FIXME
+def calculate_fps(prev_time, current_time, frames):
+    if prev_time == 0:
+        return 0, current_time
+    return frames / (current_time - prev_time), current_time
 
-        # Draw the rectangle around detected smile
-        for x, y, w, h in smile:
-            img = cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 3)
+def display_text(frame, text, position, font, font_scale, font_color, thickness, line_type):
+    cv2.putText(frame, text, position, font, font_scale, font_color, thickness, line_type)
 
-        new_frame_time = time.time()
 
-        if frame_counter >= 60:
-            if frame_counter == 60:
-                fps = frames / 60
-                if len(smile) > 0:
-                    print("Smile detected, fps: " + str(fps))
-                else:
-                    print("Smile not detected, fps: " + str(fps))
-            frame_counter = 0
-            frames = 0
-        else:
-            frames += 1 / (new_frame_time - prev_frame_time)
-            prev_frame_time = new_frame_time
-            frame_counter += 1
+def is_smile_within_face(smiles, face_coordinates):
+    face_x, face_y, face_w, face_h = face_coordinates
+    for (x, y, w, h) in smiles:
+        if x > face_x and y > face_y and (x + w) < (face_x + face_w) and (y + h) < (face_y + face_h):
+            return True 
+    return False 
 
-        # Get img size
-        h, w, c = frame.shape
-        # Set new img position depending on img size
-        text_position = (round(w/4), round(h/8))
-        # Text to show
-        text_to_show = "Detected smiles: " + str(smiles_detected) + " fps: " + str(round(fps))
-        # Add smile count
-        cv2.putText(img, text_to_show,
-                    text_position,
-                    font,
-                    font_scale,
-                    font_color,
-                    font_thickness,
-                    font_line_type)
-    frame_counter += 1
-    # Display output
-    cv2.imshow('smile detect', frame)
 
-    # Stop if escape key is pressed
-    key = cv2.waitKey(30) & 0xff
-    if key == 27:
-        break
+def draw_smile_rectangle(smiles, face_coordinates, frame):
+    face_x, face_y, face_w, face_h = face_coordinates
+    for (x, y, w, h) in smiles:
+        # Check if inside face border
+        if x > face_x and y > face_y and (x + w) < (face_x + face_w) and (y + h) < (face_y + face_h):
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
-# Release the VideoCapture object
-video.release()
-cv2.destroyAllWindows()
+
+def count_smiles(smile_detected, smile_active, last_smile_time, smiles_detected):
+    current_time = time.time()
+    
+    if smile_detected:
+        if not smile_active and (current_time - last_smile_time) > TIME_TO_START_COUNTING:
+            smiles_detected += 1
+            smile_active = True
+    else:
+        smile_active = False
+        last_smile_time = current_time
+
+    return smile_active, last_smile_time, smiles_detected
+
+# Main function to process video and detect smiles
+def process_video():
+    smile_cascade, face_cascade = load_cascades()
+    video = initialize_video_capture()
+
+    # Text configuration
+    # FIXME: Remove that many variables from here
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 1
+    font_color = (255, 0, 0)
+    font_thickness = 3
+    font_line_type = 2
+
+    smiles_detected = 0
+    smile_active = False
+    last_smile_time = 0
+    prev_frame_time = 0
+    frame_counter = 0
+    fps = 0
+    frames = 0
+
+    while True:
+        check, frame = video.read()
+        if not check:
+            break
+
+        gray_frame = convert_to_grayscale(frame)
+        faces = detect_faces(face_cascade, gray_frame)
+
+        for (face_x, face_y, face_w, face_h) in faces:
+            draw_rectangles(frame, [(face_x, face_y, face_w, face_h)], (0, 0, 255))
+            smiles = detect_smiles(smile_cascade, gray_frame)
+            smile_detected = is_smile_within_face(smiles, (face_x, face_y, face_w, face_h))
+            smile_active, last_smile_time, smiles_detected = count_smiles(smile_detected, smile_active, last_smile_time, smiles_detected)
+            if smile_detected:
+                draw_smile_rectangle(smiles, (face_x, face_y, face_w, face_h), frame)
+
+            # FPS Calculation
+            new_frame_time = time.time()
+            fps, prev_frame_time = calculate_fps(prev_frame_time, new_frame_time, frames)
+            frames += 1
+
+            # Display info
+            h, w, _ = frame.shape
+            text_position = (round(w / 4), round(h / 8))
+            text_to_show = f"Detected smiles: {smiles_detected} fps: {round(fps)}"
+            display_text(frame, text_to_show, text_position, font, font_scale, font_color, font_thickness, font_line_type)
+
+        cv2.imshow('Smile Detection', frame)
+
+        # Exit on escape key
+        if cv2.waitKey(30) & 0xFF == 27:
+            break
+
+    # Clean up
+    video.release()
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    process_video()
