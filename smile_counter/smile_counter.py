@@ -5,11 +5,10 @@ import time
 FACE_SCALE_FACTOR = 1.1
 FACE_MIN_NEIGHBOURS = 10
 SMILE_SCALE_FACTOR = 1.05
-SMILE_MIN_NEIGHBOURS = 15
+SMILE_MIN_NEIGHBOURS = 30
 
 # Time constants
-TIME_TO_START_COUNTING = 0.8  # Time to detect smile continuously
-DRAW_RECTANGLE_DURATION = 2   # Time to draw the blue rectangle after smile is detected
+TIME_TO_START_COUNTING = 0.5  # Time to detect smile continuously
 
 def load_cascades():
     smile_cascade = cv2.CascadeClassifier("haar_classifiers/haarcascade_smile.xml")
@@ -40,32 +39,28 @@ def calculate_fps(prev_time, current_time, frames):
 def display_text(frame, text, position, font, font_scale, font_color, thickness, line_type):
     cv2.putText(frame, text, position, font, font_scale, font_color, thickness, line_type)
 
-# Function to handle smile detection and rectangle drawing with a time delay
-def handle_smile_and_draw(smile_detected, smile_active, last_smile_time, smiles_detected, frame, smiles, face_x, face_y, last_draw_time):
+# Function to handle smile detection and rectangle drawing
+def handle_smile_and_draw(smile_detected, smile_active, last_smile_time, smiles_detected, frame, smiles, face_x, face_y):
     current_time = time.time()
 
-    # Check if a smile has been detected continuously
+    # Check if a smile has been detected continuously for TIME_TO_START_COUNTING
     if smile_detected:
         if not smile_active and (current_time - last_smile_time) > TIME_TO_START_COUNTING:
             smiles_detected += 1  # Increment smile count
             smile_active = True
-            last_draw_time = current_time  # Start the timer for drawing the blue rectangle
-
     else:
         smile_active = False
         last_smile_time = current_time  # Reset smile detection timer
 
-    # Check if the blue rectangle should still be drawn (for DRAW_RECTANGLE_DURATION after a smile)
-    if (current_time - last_draw_time) <= DRAW_RECTANGLE_DURATION:
-        # Draw blue rectangle around the largest smile
-        if len(smiles) > 0:
-            # Find the largest smile (by area)
-            largest_smile = max(smiles, key=lambda s: s[2] * s[3])
-            sx, sy, sw, sh = largest_smile
-            smile_x, smile_y = face_x + sx, face_y + sy
-            draw_rectangles(frame, [(smile_x, smile_y, sw, sh)], (255, 0, 0))  # Blue rectangle
+    # Draw blue rectangle around the largest smile immediately
+    if len(smiles) > 0 and smile_active:
+        # Find the largest smile (by area)
+        largest_smile = max(smiles, key=lambda s: s[2] * s[3])
+        sx, sy, sw, sh = largest_smile
+        smile_x, smile_y = face_x + sx, face_y + sy
+        draw_rectangles(frame, [(smile_x, smile_y, sw, sh)], (255, 0, 0))  # Blue rectangle
 
-    return smile_active, last_smile_time, smiles_detected, last_draw_time
+    return smile_active, last_smile_time, smiles_detected
 
 # Main function to process video and detect smiles
 def process_video():
@@ -85,7 +80,6 @@ def process_video():
     prev_frame_time = 0
     fps = 0
     frames = 0
-    last_draw_time = 0  # Keeps track of the time the last smile was detected
 
     while True:
         check, frame = video.read()
@@ -110,8 +104,8 @@ def process_video():
             smile_detected = len(smiles) > 0
 
             # Handle smile detection and rectangle drawing with timing
-            smile_active, last_smile_time, smiles_detected, last_draw_time = handle_smile_and_draw(
-                smile_detected, smile_active, last_smile_time, smiles_detected, frame, smiles, face_x, face_y, last_draw_time
+            smile_active, last_smile_time, smiles_detected = handle_smile_and_draw(
+                smile_detected, smile_active, last_smile_time, smiles_detected, frame, smiles, face_x, face_y
             )
 
             # FPS calculation
