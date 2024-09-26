@@ -1,15 +1,16 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, simpledialog
 import cv2
 from PIL import Image, ImageTk
 from src.video_capture import VideoCapture
 from src.smile_detector import SmileDetector
 from src.fps_calculator import FPSCalculator
-from src.config import FONT
 import os
 
+# Import configuration constants
+from src.config import FONT, FACE_SCALE_FACTOR, FACE_MIN_NEIGHBOURS, SMILE_SCALE_FACTOR, SMILE_MIN_NEIGHBOURS, TIME_TO_START_COUNTING
+
 class SmileCounterApp:
-    # FIXME: This code needs refactoring e.g. using SOLID principles
     def __init__(self, master):
         self.master = master
         self.master.title("Smile Counter 2.0")
@@ -64,6 +65,7 @@ class SmileCounterApp:
     def start_video(self):
         # Hide buttons and header
         self.header.pack_forget()
+        self.subtitle.pack_forget()
         self.logo_label.pack_forget()
         self.button_frame.pack_forget()
 
@@ -109,7 +111,77 @@ class SmileCounterApp:
                 self.canvas.after(10, self.update_frame)
 
     def show_options(self):
-        messagebox.showinfo("Options", "Options menu is not implemented yet.")
+        # Create a new window for options
+        options_window = tk.Toplevel(self.master)
+        options_window.title("Options")
+
+        # Option settings
+        tk.Label(options_window, text="Face Scale Factor:").grid(row=0, column=0, padx=10, pady=5)
+        face_scale_entry = tk.Entry(options_window)
+        face_scale_entry.grid(row=0, column=1, padx=10, pady=5)
+        face_scale_entry.insert(0, str(FACE_SCALE_FACTOR))  # Insert current value
+
+        tk.Label(options_window, text="Face Min Neighbours:").grid(row=1, column=0, padx=10, pady=5)
+        face_min_neighbours_entry = tk.Entry(options_window)
+        face_min_neighbours_entry.grid(row=1, column=1, padx=10, pady=5)
+        face_min_neighbours_entry.insert(0, str(FACE_MIN_NEIGHBOURS))  # Insert current value
+
+        tk.Label(options_window, text="Smile Scale Factor:").grid(row=2, column=0, padx=10, pady=5)
+        smile_scale_entry = tk.Entry(options_window)
+        smile_scale_entry.grid(row=2, column=1, padx=10, pady=5)
+        smile_scale_entry.insert(0, str(SMILE_SCALE_FACTOR))  # Insert current value
+
+        tk.Label(options_window, text="Smile Min Neighbours:").grid(row=3, column=0, padx=10, pady=5)
+        smile_min_neighbours_entry = tk.Entry(options_window)
+        smile_min_neighbours_entry.grid(row=3, column=1, padx=10, pady=5)
+        smile_min_neighbours_entry.insert(0, str(SMILE_MIN_NEIGHBOURS))  # Insert current value
+
+        tk.Label(options_window, text="Time to Start Counting:").grid(row=4, column=0, padx=10, pady=5)
+        time_to_start_entry = tk.Entry(options_window)
+        time_to_start_entry.grid(row=4, column=1, padx=10, pady=5)
+        time_to_start_entry.insert(0, str(TIME_TO_START_COUNTING))  # Insert current value
+
+        # Button to save changes
+        save_button = tk.Button(options_window, text="Save", command=lambda: self.save_options(
+            face_scale_entry.get(), face_min_neighbours_entry.get(),
+            smile_scale_entry.get(), smile_min_neighbours_entry.get(),
+            time_to_start_entry.get()
+        ))
+        save_button.grid(row=5, columnspan=2, padx=10, pady=10)
+
+    def save_options(self, face_scale, face_min_neighbours, smile_scale, smile_min_neighbours, time_to_start):
+        # Convert values and save to configuration file
+        try:
+            face_scale = float(face_scale)
+            face_min_neighbours = int(face_min_neighbours)
+            smile_scale = float(smile_scale)
+            smile_min_neighbours = int(smile_min_neighbours)
+            time_to_start = float(time_to_start)
+
+            # Ensure the 'src' directory exists
+            config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src', 'config.py')
+            os.makedirs(os.path.dirname(config_path), exist_ok=True)
+
+            # Save to file
+            with open(config_path, 'w') as f:
+                f.write(f"# Configuration Constants\n")
+                f.write(f"FACE_SCALE_FACTOR = {face_scale}\n")
+                f.write(f"FACE_MIN_NEIGHBOURS = {face_min_neighbours}\n")
+                f.write(f"SMILE_SCALE_FACTOR = {smile_scale}\n")
+                f.write(f"SMILE_MIN_NEIGHBOURS = {smile_min_neighbours}\n")
+                f.write(f"TIME_TO_START_COUNTING = {time_to_start}\n\n")
+                f.write(f"# Font Configuration\n")
+                f.write(f"FONT = {{\n")
+                f.write(f'    "font": "HERSHEY_SIMPLEX",\n')
+                f.write(f'    "scale": 1,\n')
+                f.write(f'    "color": (255, 0, 0),\n')
+                f.write(f'    "thickness": 3,\n')
+                f.write(f'    "line_type": 2\n')
+                f.write(f"}}\n")
+
+            messagebox.showinfo("Success", "Options saved successfully!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error saving options: {e}")
 
     def on_closing(self):
         if self.video_capture:
