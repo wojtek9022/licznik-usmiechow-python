@@ -93,7 +93,7 @@ Try to utilise [clean code](https://gist.github.com/wojteklu/73c6914cc446146b8b5
     thisIsAnExample = IsTrueFunction()
     ```
 
-9. **Use underscore(_) beofre the name of private/protected attribute/function of the class/module to mark it as non-public. this practice is not only a convention, in case of wild card (*) imports function/variables marked as non-public will not be imported. For access level control follow the [principle of least astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment).** 
+9. **Use underscore (_) beofre the name of private/protected attribute/function of the class/module to mark it as non-public. this practice is not only a convention, in case of wild card (*) imports function/variables marked as non-public will not be imported. For access level control follow the [principle of least astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment).** 
 
     **That means you should not use use getters and setters that should be accessible for both read and write without any restrictions (mark them as public). If you wish to add some restrictions then you should use proper decorator (@property - part of language syntax) to implement getters/setters.**
 
@@ -109,114 +109,114 @@ Try to utilise [clean code](https://gist.github.com/wojteklu/73c6914cc446146b8b5
             self.d = d # public attribute exposed for both read and write without any restrictions
             self._e # public attribute exposed for both read and write with some restrictions
 
-    @property
-    def b(self) -> int:
-        # read-only access - getter method
-        return self._b
+        @property
+        def b(self) -> int:
+            # read-only access - getter method
+            return self._b
 
-    @c.setter
-    def c(self, value: int) -> None:
-        # write-only access - setter method
-        self._c = value
+        @c.setter
+        def c(self, value: int) -> None:
+            # write-only access - setter method
+            self._c = value
 
-    @property
-    def e(self) -> int:
-        # read access - getter method
-        return self._e
+        @property
+        def e(self) -> int:
+            # read access - getter method
+            return self._e
 
-    @e.setter
-    def e(self, value: int) -> None:
-        # write acces with some restrictions - setter method
-        # add some restrictions
-        # 1. verify the value type
-        if not isinstance(value, int):
-            return TypeError(
-                "'e' attribute of the {cls_name} class must be an integer,"
-                " passing other type of argument prevents the class from working properly,"
-                " new value: {new_value} was not set for the attribute, will continue with"
-                " previous value: {old_value}".format(cls_name=repr(self.__class__.__name), 
-                new_value=repr(value), old_value=repr(self._e))
-            )
-        # 2. verify the value range
-        if not (0 <= value <= 100):
-            raise ValueError(
-                "'e' attribute of the {cls_name} class represents percentage so it must fit into,"
-                " proper range between 0 and 100 inclusive, new value: {new_value} was not set"
-                " for the attribute, will continue with previous value: {old_value}".format(cls_name=repr(self.__class__.__name), 
-                new_value=repr(value), old_value=repr(self._e))
-            )
-        # all checks passed, set the attribute
-        self._e = value
+        @e.setter
+        def e(self, value: int) -> None:
+            # write acces with some restrictions - setter method
+            # add some restrictions
+            # 1. verify the value type
+            if not isinstance(value, int):
+                return TypeError(
+                    "'e' attribute of the {cls_name} class must be an integer,"
+                    " passing other type of argument prevents the class from working properly,"
+                    " new value: {new_value} was not set for the attribute, will continue with"
+                    " previous value: {old_value}".format(cls_name=repr(self.__class__.__name), 
+                    new_value=repr(value), old_value=repr(self._e))
+                )
+            # 2. verify the value range
+            if not (0 <= value <= 100):
+                raise ValueError(
+                    "'e' attribute of the {cls_name} class represents percentage so it must fit into,"
+                    " proper range between 0 and 100 inclusive, new value: {new_value} was not set"
+                    " for the attribute, will continue with previous value: {old_value}".format(cls_name=repr(self.__class__.__name), 
+                    new_value=repr(value), old_value=repr(self._e))
+                )
+            # all checks passed, set the attribute
+            self._e = value
 
-    def _priv_method(self) -> None:
-        print("This is private method, not exposed externally")
-    
-    def pub_method(self) -> None:
-        print("This is public method exposed externally")
-
-
-
-    x = Example(0,1,2,3,4)
-
-    # correct:
-
-    # - b: read only attr
-    y = x.b
-    # - c : write only attr
-    x.c = y
-    # - d : write and read attr
-    x.d = y
-    y = x.d
-    # - e: write and read the restriction attr
-    x.e = 99
-    y = x.e
-    # - public method
-    x.public_method()
+        def _priv_method(self) -> None:
+            print("This is private method, not exposed externally")
+        
+        def pub_method(self) -> None:
+            print("This is public method exposed externally")
 
 
-    # wrong:
-    
-    # - a: private attr
-    x._a = 0
-    x.a = 0 # takes no effect
-    y = x._a
-    y = x.a
-    # will cause
-    # >>> Traceback (most recent call last):
-    # >>> File "<stdin>", line 1, in <module>
-    # >>> AttributeError: 'Example' object has no attribute 'a'
 
-    # - b: read only str
-    x._b = y
-    x.b = y
-    y = x._b
-    # will cause
-    # >>> Traceback (most recent call last):
-    # >>> File "<stdin>", line 1, in <module>
-    # >>> AttributeError: can't set attribute
+        x = Example(0,1,2,3,4)
 
-    # - c: write only attr
-    x._c = 0
-    y = x._c
-    y = x.c
-    # will cause
-    # >>> Traceback (most recent call last):
-    # >>> File "<stdin>", line 1, in <module>
-    # >>> AttributeError: unreadable attribute
+        # correct:
 
-    # - e: write and read with restrictions attr
-    x._e = 0
-    x.e = -1
-    x.e = 101
-    x.e = ''
-    y = x._e
-    # will cause one of the 'e' method exceptions
-    
-    # - methods
-    x._priv_method()
-    # interpreter will show you only public methods/attributes:
-    # >>> x.
-    # x.b       x.c     x.d     x.e     x.pub_method()
+        # - b: read only attr
+        y = x.b
+        # - c : write only attr
+        x.c = y
+        # - d : write and read attr
+        x.d = y
+        y = x.d
+        # - e: write and read the restriction attr
+        x.e = 99
+        y = x.e
+        # - public method
+        x.public_method()
+
+
+        # wrong:
+        
+        # - a: private attr
+        x._a = 0
+        x.a = 0 # takes no effect
+        y = x._a
+        y = x.a
+        # will cause
+        # >>> Traceback (most recent call last):
+        # >>> File "<stdin>", line 1, in <module>
+        # >>> AttributeError: 'Example' object has no attribute 'a'
+
+        # - b: read only str
+        x._b = y
+        x.b = y
+        y = x._b
+        # will cause
+        # >>> Traceback (most recent call last):
+        # >>> File "<stdin>", line 1, in <module>
+        # >>> AttributeError: can't set attribute
+
+        # - c: write only attr
+        x._c = 0
+        y = x._c
+        y = x.c
+        # will cause
+        # >>> Traceback (most recent call last):
+        # >>> File "<stdin>", line 1, in <module>
+        # >>> AttributeError: unreadable attribute
+
+        # - e: write and read with restrictions attr
+        x._e = 0
+        x.e = -1
+        x.e = 101
+        x.e = ''
+        y = x._e
+        # will cause one of the 'e' method exceptions
+        
+        # - methods
+        x._priv_method()
+        # interpreter will show you only public methods/attributes:
+        # >>> x.
+        # x.b       x.c     x.d     x.e     x.pub_method()
 
     ```
 
