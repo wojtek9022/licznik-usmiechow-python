@@ -1,6 +1,8 @@
 # SMILE COUNTER CODING STANDARDS
 
-Follow [PEP-8](https://peps.python.org/pep-0008/) coding standards for assumptions not defined in this file.
+**Follow [PEP-8](https://peps.python.org/pep-0008/) coding standards for assumptions not defined in this file.**
+
+Try to utilise [clean code](https://gist.github.com/wojteklu/73c6914cc446146b8b533c0988cf8d29) and [SOLID](https://en.wikipedia.org/wiki/SOLID) principles when possible.
 
 
 # General conventions
@@ -333,4 +335,17 @@ Follow [PEP-8](https://peps.python.org/pep-0008/) coding standards for assumptio
         _do_step_0()
         external.module.public_external_method()
     ```
-    
+
+13. **WIP**
+
+
+# Indentation
+
+
+# Docstrings
+
+
+# Logging
+
+
+# Imports
