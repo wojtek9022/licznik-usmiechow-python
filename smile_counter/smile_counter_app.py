@@ -6,7 +6,6 @@ from src.video_capture import VideoCapture
 from src.smile_detector import SmileDetector
 from src.fps_calculator import FPSCalculator
 import os
-import json
 from typing import Optional
 
 # Import configuration constants
@@ -24,6 +23,7 @@ class SmileCounterApp:
         self._load_images()
         self._create_header()
         self._create_buttons()
+        self._create_language_buttons()
 
         self.video_frame: Optional[tk.Frame] = None
         self.canvas: Optional[tk.Canvas] = None
@@ -41,6 +41,8 @@ class SmileCounterApp:
         current_dir: str = os.path.dirname(os.path.abspath(__file__))  # Get current script directory
         self.logo_path: str = os.path.join(current_dir, 'src', 'data', 'img', 'main_menu_logo.png')
         self.icon_path: str = os.path.join(current_dir, 'src', 'data', 'img', 'icon.ico')
+        self.flag_en_path: str = os.path.join(current_dir, 'src', 'data', 'img', 'flag_en.png')  # Placeholder for English flag
+        self.flag_pl_path: str = os.path.join(current_dir, 'src', 'data', 'img', 'flag_pl.png')  # Placeholder for Polish flag
         icon_image: Image.Image = Image.open(self.icon_path)
         icon_photo: ImageTk.PhotoImage = ImageTk.PhotoImage(icon_image)
         self.master.iconphoto(True, icon_photo)
@@ -75,6 +77,26 @@ class SmileCounterApp:
         self.exit_button: tk.Button = tk.Button(self.button_frame, text=self.language.EXIT_BUTTON_TEXT, command=self.on_closing, width=15, height=2)
         self.exit_button.pack(side=tk.TOP, padx=10, pady=5)
 
+    def _create_language_buttons(self) -> None:
+        self.language_frame: tk.Frame = tk.Frame(self.master)
+        self.language_frame.pack(pady=10)
+
+        try:
+            flag_en_image: Image.Image = Image.open(self.flag_en_path).resize((30, 20), Image.LANCZOS)
+            self.flag_en_photo: ImageTk.PhotoImage = ImageTk.PhotoImage(flag_en_image)
+            self.flag_en_button: tk.Button = tk.Button(self.language_frame, image=self.flag_en_photo, command=lambda: self.change_language('en'))
+        except FileNotFoundError:
+            self.flag_en_button: tk.Button = tk.Button(self.language_frame, text="English", command=lambda: self.change_language('en'))
+        self.flag_en_button.pack(side=tk.LEFT, padx=5)
+
+        try:
+            flag_pl_image: Image.Image = Image.open(self.flag_pl_path).resize((30, 20), Image.LANCZOS)
+            self.flag_pl_photo: ImageTk.PhotoImage = ImageTk.PhotoImage(flag_pl_image)
+            self.flag_pl_button: tk.Button = tk.Button(self.language_frame, image=self.flag_pl_photo, command=lambda: self.change_language('pl'))
+        except FileNotFoundError:
+            self.flag_pl_button: tk.Button = tk.Button(self.language_frame, text="Polski", command=lambda: self.change_language('pl'))
+        self.flag_pl_button.pack(side=tk.LEFT, padx=5)
+
     def start_video(self) -> None:
         self._hide_main_menu()
         self._setup_video_frame()
@@ -87,6 +109,7 @@ class SmileCounterApp:
         self.subtitle.pack_forget()
         self.logo_label.pack_forget()
         self.button_frame.pack_forget()
+        self.language_frame.pack_forget()
 
     def _setup_video_frame(self) -> None:
         self.video_frame = tk.Frame(self.master)
@@ -132,7 +155,6 @@ class SmileCounterApp:
         options_window.title(self.language.OPTIONS_TITLE_TEXT)
         self._create_options_entries(options_window)
         self._create_save_button(options_window)
-        self._create_language_selection(options_window)
 
     def _create_options_entries(self, options_window: tk.Toplevel) -> None:
         self._create_option_entry(options_window, self.language.FACE_SCALE_FACTOR_TEXT, FACE_SCALE_FACTOR, 0)
@@ -153,13 +175,7 @@ class SmileCounterApp:
             options_window.children['!entry3'].get(), options_window.children['!entry4'].get(),
             options_window.children['!entry5'].get()
         ))
-        save_button.grid(row=6, columnspan=2, padx=10, pady=10)
-
-    def _create_language_selection(self, options_window: tk.Toplevel) -> None:
-        tk.Label(options_window, text=self.language.LANGUAGE_TEXT).grid(row=5, column=0, padx=10, pady=5)
-        language_var = tk.StringVar(value=self._get_current_language_code())
-        language_menu = tk.OptionMenu(options_window, language_var, "en", "pl", command=self.change_language)
-        language_menu.grid(row=5, column=1, padx=10, pady=5)
+        save_button.grid(row=5, columnspan=2, padx=10, pady=10)
 
     def change_language(self, lang_code: str) -> None:
         if lang_code == "pl":
