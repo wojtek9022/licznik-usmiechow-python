@@ -1,9 +1,9 @@
 import cv2
 import time
-from src.video_capture import VideoCapture
-from src.smile_detector import SmileDetector
-from src.fps_calculator import FPSCalculator
-from src.config import FONT
+from app.src.video_capture import VideoCapture
+from app.src.smile_detector import SmileDetector
+from app.src.fps_calculator import FPSCalculator
+from app.src.config import FONT
 
 class SmileCounter:
     def __init__(self):
