@@ -6,151 +6,179 @@ from src.video_capture import VideoCapture
 from src.smile_detector import SmileDetector
 from src.fps_calculator import FPSCalculator
 import os
+import json
+from typing import Optional
 
 # Import configuration constants
-from src.config import FONT, FACE_SCALE_FACTOR, FACE_MIN_NEIGHBOURS, SMILE_SCALE_FACTOR, SMILE_MIN_NEIGHBOURS, TIME_TO_START_COUNTING
+from src.config import FONT, FACE_SCALE_FACTOR, FACE_MIN_NEIGHBOURS, SMILE_SCALE_FACTOR, SMILE_MIN_NEIGHBOURS, TIME_TO_START_COUNTING, LANGUAGE
+
+# Import language files
+import src.lang.lang_en as lang_en
+import src.lang.lang_pl as lang_pl
 
 class SmileCounterApp:
-    def __init__(self, master):
-        self.master = master
-        self.master.title("Smile Counter 2.0")
-        current_dir = os.path.dirname(os.path.abspath(__file__))  # Get current script directory
-        self.logo_path = os.path.join(current_dir, 'src', 'data', 'img', 'main_menu_logo.png')
-        self.icon_path = os.path.join(current_dir, 'src', 'data', 'img', 'icon.ico')
-        icon_image = Image.open(self.icon_path)
-        icon_photo = ImageTk.PhotoImage(icon_image)
-        self.master.iconphoto(True, icon_photo)
+    def __init__(self, master: tk.Tk) -> None:
+        self.master: tk.Tk = master
+        self.language = self._load_language()
+        self._setup_main_window()
+        self._load_images()
+        self._create_header()
+        self._create_buttons()
+
+        self.video_frame: Optional[tk.Frame] = None
+        self.canvas: Optional[tk.Canvas] = None
+        self.video_capture: Optional[VideoCapture] = None
+        self.smile_detector: SmileDetector = SmileDetector()
+        self.fps_calculator: FPSCalculator = FPSCalculator()
+        self.smiles_detected: int = 0
+        self.running: bool = False
+
+    def _setup_main_window(self) -> None:
+        self.master.title(self.language.TITLE_TEXT)
         self.master.geometry("800x600")
 
-        # Header
-        self.header = tk.Label(self.master, text="Smile Counter 2.0", font=("Helvetica", 24))
-        self.header.pack(pady=20)
-        self.subtitle = tk.Label(self.master, text="Version: 2.0.0", font=("Helvetica", 12))
-        self.subtitle.pack(pady=5)
+    def _load_images(self) -> None:
+        current_dir: str = os.path.dirname(os.path.abspath(__file__))  # Get current script directory
+        self.logo_path: str = os.path.join(current_dir, 'src', 'data', 'img', 'main_menu_logo.png')
+        self.icon_path: str = os.path.join(current_dir, 'src', 'data', 'img', 'icon.ico')
+        icon_image: Image.Image = Image.open(self.icon_path)
+        icon_photo: ImageTk.PhotoImage = ImageTk.PhotoImage(icon_image)
+        self.master.iconphoto(True, icon_photo)
 
-        # Load and display the logo image if it exists
+    def _create_header(self) -> None:
+        self.header: tk.Label = tk.Label(self.master, text=self.language.TITLE_TEXT, font=("Helvetica", 24))
+        self.header.pack(pady=20)
+        self.subtitle: tk.Label = tk.Label(self.master, text=self.language.VERSION_TEXT, font=("Helvetica", 12))
+        self.subtitle.pack(pady=5)
+        self._load_logo()
+
+    def _load_logo(self) -> None:
         if os.path.exists(self.logo_path):
-            self.logo_image = Image.open(self.logo_path)
+            self.logo_image: Image.Image = Image.open(self.logo_path)
             self.logo_image = self.logo_image.resize((200, 200), Image.LANCZOS)  # Resize logo if necessary
-            self.logo_photo = ImageTk.PhotoImage(self.logo_image)
-            self.logo_label = tk.Label(self.master, image=self.logo_photo)  # Use image in Label
+            self.logo_photo: ImageTk.PhotoImage = ImageTk.PhotoImage(self.logo_image)
+            self.logo_label: tk.Label = tk.Label(self.master, image=self.logo_photo)  # Use image in Label
         else:
-            self.logo_label = tk.Label(self.master, text="[Logo not found]", font=("Helvetica", 16))  # Fallback text
+            self.logo_label: tk.Label = tk.Label(self.master, text=self.language.LOGO_NOT_FOUND_TEXT, font=("Helvetica", 16))  # Fallback text
         self.logo_label.pack(pady=10)
 
-        # Frame for buttons
-        self.button_frame = tk.Frame(self.master)
+    def _create_buttons(self) -> None:
+        self.button_frame: tk.Frame = tk.Frame(self.master)
         self.button_frame.pack(pady=20)
 
-        # Start button
-        self.start_button = tk.Button(self.button_frame, text="Start", command=self.start_video, width=15, height=2)
+        self.start_button: tk.Button = tk.Button(self.button_frame, text=self.language.START_BUTTON_TEXT, command=self.start_video, width=15, height=2)
         self.start_button.pack(side=tk.TOP, padx=10, pady=5)
 
-        # Options button
-        self.options_button = tk.Button(self.button_frame, text="Options", command=self.show_options, width=15, height=2)
+        self.options_button: tk.Button = tk.Button(self.button_frame, text=self.language.OPTIONS_BUTTON_TEXT, command=self.show_options, width=15, height=2)
         self.options_button.pack(side=tk.TOP, padx=10, pady=5)
 
-        # Exit button
-        self.exit_button = tk.Button(self.button_frame, text="Exit", command=self.on_closing, width=15, height=2)
+        self.exit_button: tk.Button = tk.Button(self.button_frame, text=self.language.EXIT_BUTTON_TEXT, command=self.on_closing, width=15, height=2)
         self.exit_button.pack(side=tk.TOP, padx=10, pady=5)
 
-        self.video_frame = None
-        self.canvas = None
-        self.video_capture = None
-        self.smile_detector = SmileDetector()
-        self.fps_calculator = FPSCalculator()
-        self.smiles_detected = 0
-        self.running = False
+    def start_video(self) -> None:
+        self._hide_main_menu()
+        self._setup_video_frame()
+        self.video_capture = VideoCapture()
+        self.running = True
+        self.update_frame()
 
-    def start_video(self):
-        # Hide buttons and header
+    def _hide_main_menu(self) -> None:
         self.header.pack_forget()
         self.subtitle.pack_forget()
         self.logo_label.pack_forget()
         self.button_frame.pack_forget()
 
-        # Frame for video
+    def _setup_video_frame(self) -> None:
         self.video_frame = tk.Frame(self.master)
         self.video_frame.pack(fill=tk.BOTH, expand=True)
-
         self.canvas = tk.Canvas(self.video_frame, bg='black')
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
-        # Start video capture
-        self.video_capture = VideoCapture()
-        self.running = True
-        self.update_frame()
-
-    def update_frame(self):
-        # Update video frame
+    def update_frame(self) -> None:
         if self.running:
             ret, frame = self.video_capture.read()
             if ret:
-                gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                faces = self.smile_detector.detect_faces(gray_frame)
-
-                for (face_x, face_y, face_w, face_h) in faces:
-                    self.smile_detector.draw_rectangles(frame, [(face_x, face_y, face_w, face_h)], (0, 0, 255))
-                    face_region = gray_frame[face_y + face_h // 2:face_y + face_h, face_x:face_x + face_w]
-                    smiles = self.smile_detector.detect_smiles(face_region)
-                    smiles = [(x, y + face_h // 2, w, h) for (x, y, w, h) in smiles]
-
-                    smile_detected = len(smiles) > 0
-                    self.smile_detector.handle_smile_and_draw(smile_detected, frame, smiles, face_x, face_y)
-                    self.smiles_detected = self.smile_detector.smiles_detected
-
-                frame = cv2.resize(frame, (self.canvas.winfo_width(), self.canvas.winfo_height()))
-                img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                imgtk = ImageTk.PhotoImage(image=img)
-                self.canvas.create_image(0, 0, anchor=tk.NW, image=imgtk)
-                self.canvas.imgtk = imgtk
-
-                text_to_show = f"Detected smiles: {self.smiles_detected}"
-                self.canvas.create_text(10, 10, anchor=tk.NW, text=text_to_show, fill="red", font=("Helvetica", 16))
-
+                self._process_frame(frame)
                 self.canvas.after(10, self.update_frame)
 
-    def show_options(self):
-        # Create a new window for options
+    def _process_frame(self, frame: cv2.Mat) -> None:
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = self.smile_detector.detect_faces(gray_frame)
+
+        for (face_x, face_y, face_w, face_h) in faces:
+            self.smile_detector.draw_rectangles(frame, [(face_x, face_y, face_w, face_h)], (0, 0, 255))
+            face_region = gray_frame[face_y + face_h // 2:face_y + face_h, face_x:face_x + face_w]
+            smiles = self.smile_detector.detect_smiles(face_region)
+            smiles = [(x, y + face_h // 2, w, h) for (x, y, w, h) in smiles]
+
+            smile_detected = len(smiles) > 0
+            self.smile_detector.handle_smile_and_draw(smile_detected, frame, smiles, face_x, face_y)
+            self.smiles_detected = self.smile_detector.smiles_detected
+
+        self._display_frame(frame)
+
+    def _display_frame(self, frame: cv2.Mat) -> None:
+        frame = cv2.resize(frame, (self.canvas.winfo_width(), self.canvas.winfo_height()))
+        img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        imgtk = ImageTk.PhotoImage(image=img)
+        self.canvas.create_image(0, 0, anchor=tk.NW, image=imgtk)
+        self.canvas.imgtk = imgtk
+
+        text_to_show = self.language.DETECTED_SMILES_TEXT.format(count=self.smiles_detected)
+        self.canvas.create_text(10, 10, anchor=tk.NW, text=text_to_show, fill="red", font=("Helvetica", 16))
+
+    def show_options(self) -> None:
         options_window = tk.Toplevel(self.master)
-        options_window.title("Options")
+        options_window.title(self.language.OPTIONS_TITLE_TEXT)
+        self._create_options_entries(options_window)
+        self._create_save_button(options_window)
+        self._create_language_selection(options_window)
 
-        # Option settings
-        tk.Label(options_window, text="Face Scale Factor:").grid(row=0, column=0, padx=10, pady=5)
-        face_scale_entry = tk.Entry(options_window)
-        face_scale_entry.grid(row=0, column=1, padx=10, pady=5)
-        face_scale_entry.insert(0, str(FACE_SCALE_FACTOR))  # Insert current value
+    def _create_options_entries(self, options_window: tk.Toplevel) -> None:
+        self._create_option_entry(options_window, self.language.FACE_SCALE_FACTOR_TEXT, FACE_SCALE_FACTOR, 0)
+        self._create_option_entry(options_window, self.language.FACE_MIN_NEIGHBOURS_TEXT, FACE_MIN_NEIGHBOURS, 1)
+        self._create_option_entry(options_window, self.language.SMILE_SCALE_FACTOR_TEXT, SMILE_SCALE_FACTOR, 2)
+        self._create_option_entry(options_window, self.language.SMILE_MIN_NEIGHBOURS_TEXT, SMILE_MIN_NEIGHBOURS, 3)
+        self._create_option_entry(options_window, self.language.TIME_TO_START_COUNTING_TEXT, TIME_TO_START_COUNTING, 4)
 
-        tk.Label(options_window, text="Face Min Neighbours:").grid(row=1, column=0, padx=10, pady=5)
-        face_min_neighbours_entry = tk.Entry(options_window)
-        face_min_neighbours_entry.grid(row=1, column=1, padx=10, pady=5)
-        face_min_neighbours_entry.insert(0, str(FACE_MIN_NEIGHBOURS))  # Insert current value
+    def _create_option_entry(self, options_window: tk.Toplevel, label_text: str, value: float, row: int) -> None:
+        tk.Label(options_window, text=label_text).grid(row=row, column=0, padx=10, pady=5)
+        entry = tk.Entry(options_window)
+        entry.grid(row=row, column=1, padx=10, pady=5)
+        entry.insert(0, str(value))
 
-        tk.Label(options_window, text="Smile Scale Factor:").grid(row=2, column=0, padx=10, pady=5)
-        smile_scale_entry = tk.Entry(options_window)
-        smile_scale_entry.grid(row=2, column=1, padx=10, pady=5)
-        smile_scale_entry.insert(0, str(SMILE_SCALE_FACTOR))  # Insert current value
-
-        tk.Label(options_window, text="Smile Min Neighbours:").grid(row=3, column=0, padx=10, pady=5)
-        smile_min_neighbours_entry = tk.Entry(options_window)
-        smile_min_neighbours_entry.grid(row=3, column=1, padx=10, pady=5)
-        smile_min_neighbours_entry.insert(0, str(SMILE_MIN_NEIGHBOURS))  # Insert current value
-
-        tk.Label(options_window, text="Time to Start Counting:").grid(row=4, column=0, padx=10, pady=5)
-        time_to_start_entry = tk.Entry(options_window)
-        time_to_start_entry.grid(row=4, column=1, padx=10, pady=5)
-        time_to_start_entry.insert(0, str(TIME_TO_START_COUNTING))  # Insert current value
-
-        # Button to save changes
-        save_button = tk.Button(options_window, text="Save", command=lambda: self.save_options(
-            face_scale_entry.get(), face_min_neighbours_entry.get(),
-            smile_scale_entry.get(), smile_min_neighbours_entry.get(),
-            time_to_start_entry.get()
+    def _create_save_button(self, options_window: tk.Toplevel) -> None:
+        save_button = tk.Button(options_window, text=self.language.SAVE_BUTTON_TEXT, command=lambda: self.save_options(
+            options_window.children['!entry'].get(), options_window.children['!entry2'].get(),
+            options_window.children['!entry3'].get(), options_window.children['!entry4'].get(),
+            options_window.children['!entry5'].get()
         ))
-        save_button.grid(row=5, columnspan=2, padx=10, pady=10)
+        save_button.grid(row=6, columnspan=2, padx=10, pady=10)
 
-    def save_options(self, face_scale, face_min_neighbours, smile_scale, smile_min_neighbours, time_to_start):
-        # Convert values and save to configuration file
+    def _create_language_selection(self, options_window: tk.Toplevel) -> None:
+        tk.Label(options_window, text=self.language.LANGUAGE_TEXT).grid(row=5, column=0, padx=10, pady=5)
+        language_var = tk.StringVar(value=self._get_current_language_code())
+        language_menu = tk.OptionMenu(options_window, language_var, "en", "pl", command=self.change_language)
+        language_menu.grid(row=5, column=1, padx=10, pady=5)
+
+    def change_language(self, lang_code: str) -> None:
+        if lang_code == "pl":
+            self.language = lang_pl
+        else:
+            self.language = lang_en
+        self._save_language(lang_code)
+        self._refresh_ui()
+
+    def _refresh_ui(self) -> None:
+        self.master.title(self.language.TITLE_TEXT)
+        self.header.config(text=self.language.TITLE_TEXT)
+        self.subtitle.config(text=self.language.VERSION_TEXT)
+        self.start_button.config(text=self.language.START_BUTTON_TEXT)
+        self.options_button.config(text=self.language.OPTIONS_BUTTON_TEXT)
+        self.exit_button.config(text=self.language.EXIT_BUTTON_TEXT)
+        self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
+
+    def save_options(self, face_scale: str, face_min_neighbours: str, smile_scale: str, smile_min_neighbours: str, time_to_start: str) -> None:
         try:
             face_scale = float(face_scale)
             face_min_neighbours = int(face_min_neighbours)
@@ -158,11 +186,9 @@ class SmileCounterApp:
             smile_min_neighbours = int(smile_min_neighbours)
             time_to_start = float(time_to_start)
 
-            # Ensure the 'src' directory exists
             config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src', 'config.py')
             os.makedirs(os.path.dirname(config_path), exist_ok=True)
 
-            # Save to file
             with open(config_path, 'w') as f:
                 f.write(f"# Configuration Constants\n")
                 f.write(f"FACE_SCALE_FACTOR = {face_scale}\n")
@@ -178,15 +204,37 @@ class SmileCounterApp:
                 f.write(f'    "thickness": 3,\n')
                 f.write(f'    "line_type": 2\n')
                 f.write(f"}}\n")
+                f.write(f"# Language Configuration\n")
+                f.write(f"LANGUAGE = '{self._get_current_language_code()}'\n")
 
-            messagebox.showinfo("Success", "Options saved successfully!")
+            messagebox.showinfo("Success", self.language.SUCCESS_MESSAGE_TEXT)
         except Exception as e:
-            messagebox.showerror("Error", f"Error saving options: {e}")
+            messagebox.showerror("Error", self.language.ERROR_MESSAGE_TEXT.format(error=e))
 
-    def on_closing(self):
+    def on_closing(self) -> None:
         if self.video_capture:
             self.video_capture.release()
         self.master.destroy()
+
+    def _load_language(self) -> object:
+        try:
+            from src.config import LANGUAGE
+            if LANGUAGE == 'pl':
+                return lang_pl
+        except ImportError:
+            pass
+        return lang_en
+
+    def _save_language(self, lang_code: str) -> None:
+        config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src', 'config.py')
+        with open(config_path, 'a') as f:
+            f.write(f"LANGUAGE = '{lang_code}'\n")
+
+    def _get_current_language_code(self) -> str:
+        if self.language == lang_pl:
+            return 'pl'
+        return 'en'
+
 
 if __name__ == "__main__":
     root = tk.Tk()

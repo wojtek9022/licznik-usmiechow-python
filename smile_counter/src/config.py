@@ -13,3 +13,5 @@ FONT = {
     "thickness": 3,
     "line_type": 2
 }
+# Language Configuration
+LANGUAGE = 'pl'
