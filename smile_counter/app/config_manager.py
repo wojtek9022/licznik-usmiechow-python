@@ -31,6 +31,7 @@ class ConfigManager:
             shutil.copy2(self.default_config_path, self.config_path)
 
     def get_config(self):
+        """Get fresh config instance by reloading the module"""
         self._ensure_config_exists()
         spec = importlib.util.spec_from_file_location("config", self.config_path)
         config = importlib.util.module_from_spec(spec)

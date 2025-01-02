@@ -15,4 +15,4 @@ FONT = {
 }
 
 # Language Configuration
-LANGUAGE = 'en'
+LANGUAGE = 'pl'

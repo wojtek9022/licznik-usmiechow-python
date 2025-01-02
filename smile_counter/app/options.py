@@ -19,6 +19,16 @@ class Options:
         self.TIME_TO_START_COUNTING = config.TIME_TO_START_COUNTING
         
         self._init_ui_elements()
+        self.reload_config()
+
+    def reload_config(self) -> None:
+        """Reload configuration values from config file"""
+        config = self.config_manager.get_config()
+        self.FACE_SCALE_FACTOR = config.FACE_SCALE_FACTOR
+        self.FACE_MIN_NEIGHBOURS = config.FACE_MIN_NEIGHBOURS
+        self.SMILE_SCALE_FACTOR = config.SMILE_SCALE_FACTOR
+        self.SMILE_MIN_NEIGHBOURS = config.SMILE_MIN_NEIGHBOURS
+        self.TIME_TO_START_COUNTING = config.TIME_TO_START_COUNTING
 
     def _init_ui_elements(self) -> None:
         self.face_scale_label = None
@@ -81,6 +91,12 @@ class Options:
             }
             
             self.config_manager.update_config(updates)
+            self.reload_config()  # Reload config after save
+            
+            if self.options_window:
+                self.options_window.destroy()  # Close current window
+                self.show_options()  # Reopen with new values
+                
             messagebox.showinfo("Success", self.language.SUCCESS_MESSAGE_TEXT)
             
         except Exception as e:
