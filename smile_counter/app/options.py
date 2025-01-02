@@ -1,10 +1,5 @@
 import tkinter as tk
 from tkinter import messagebox
-from app.src.config import (
-    FACE_SCALE_FACTOR, FACE_MIN_NEIGHBOURS,
-    SMILE_SCALE_FACTOR, SMILE_MIN_NEIGHBOURS,
-    TIME_TO_START_COUNTING
-)
 from typing import Callable
 from app.config_manager import ConfigManager
 
@@ -14,6 +9,15 @@ class Options:
         self.language = language
         self.language_manager = language_manager
         self.config_manager = ConfigManager()
+        config = self.config_manager.get_config()
+        
+        # Get configuration values
+        self.FACE_SCALE_FACTOR = config.FACE_SCALE_FACTOR
+        self.FACE_MIN_NEIGHBOURS = config.FACE_MIN_NEIGHBOURS
+        self.SMILE_SCALE_FACTOR = config.SMILE_SCALE_FACTOR
+        self.SMILE_MIN_NEIGHBOURS = config.SMILE_MIN_NEIGHBOURS
+        self.TIME_TO_START_COUNTING = config.TIME_TO_START_COUNTING
+        
         self._init_ui_elements()
 
     def _init_ui_elements(self) -> None:
@@ -40,15 +44,15 @@ class Options:
 
     def _create_options_entries(self) -> None:
         self.face_scale_label, self.face_scale_entry = self._create_option_entry(
-            self.language.FACE_SCALE_FACTOR_TEXT, FACE_SCALE_FACTOR, 0)
+            self.language.FACE_SCALE_FACTOR_TEXT, self.FACE_SCALE_FACTOR, 0)
         self.face_min_neighbours_label, self.face_min_neighbours_entry = self._create_option_entry(
-            self.language.FACE_MIN_NEIGHBOURS_TEXT, FACE_MIN_NEIGHBOURS, 1)
+            self.language.FACE_MIN_NEIGHBOURS_TEXT, self.FACE_MIN_NEIGHBOURS, 1)
         self.smile_scale_label, self.smile_scale_entry = self._create_option_entry(
-            self.language.SMILE_SCALE_FACTOR_TEXT, SMILE_SCALE_FACTOR, 2)
+            self.language.SMILE_SCALE_FACTOR_TEXT, self.SMILE_SCALE_FACTOR, 2)
         self.smile_min_neighbours_label, self.smile_min_neighbours_entry = self._create_option_entry(
-            self.language.SMILE_MIN_NEIGHBOURS_TEXT, SMILE_MIN_NEIGHBOURS, 3)
+            self.language.SMILE_MIN_NEIGHBOURS_TEXT, self.SMILE_MIN_NEIGHBOURS, 3)
         self.time_to_start_label, self.time_to_start_entry = self._create_option_entry(
-            self.language.TIME_TO_START_COUNTING_TEXT, TIME_TO_START_COUNTING, 4)
+            self.language.TIME_TO_START_COUNTING_TEXT, self.TIME_TO_START_COUNTING, 4)
 
     def _create_option_entry(self, label_text: str, value: float, row: int) -> tuple:
         label = tk.Label(self.options_window, text=label_text)

@@ -1,4 +1,7 @@
 import tkinter as tk
+from app.initialize import ensure_app_initialized
+ensure_app_initialized()  # Initialize before other imports
+
 from app.buttons import ButtonCreator
 from app.options import Options
 from app.language import LanguageManager
@@ -9,9 +12,10 @@ from app.config_manager import ConfigManager
 class SmileCounterApp:
     def __init__(self, master: tk.Tk) -> None:
         self.master = master
+        self.config_manager = ConfigManager()
+        
         self.language_manager = LanguageManager()
         self.language = self.language_manager.language
-        self.config_manager = ConfigManager()
         
         self.button_creator = ButtonCreator(self.master, self.language)
         self.options = Options(self.master, self.language, self.language_manager)

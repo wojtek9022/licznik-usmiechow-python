@@ -1,5 +1,5 @@
 # Configuration Constants
-FACE_SCALE_FACTOR = 1.2
+FACE_SCALE_FACTOR = 1.1
 FACE_MIN_NEIGHBOURS = 10
 SMILE_SCALE_FACTOR = 1.05
 SMILE_MIN_NEIGHBOURS = 180
@@ -15,4 +15,4 @@ FONT = {
 }
 
 # Language Configuration
-LANGUAGE = 'en'
+LANGUAGE = 'pl'

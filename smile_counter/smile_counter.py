@@ -3,7 +3,7 @@ import time
 from app.src.video_capture import VideoCapture
 from app.src.smile_detector import SmileDetector
 from app.src.fps_calculator import FPSCalculator
-from app.src.config import FONT
+from smile_counter.app.src.config1 import FONT
 
 class SmileCounter:
     def __init__(self):
