@@ -2,25 +2,22 @@ import tkinter as tk
 from app.initialize import ensure_app_initialized
 ensure_app_initialized()  # Initialize before other imports
 
-from app.buttons import ButtonCreator
+from app.button_creator import ButtonCreator
 from app.options import Options
-from app.language import LanguageManager
-from app.video import VideoHandler
-from app.ui import UIHandler
+from app.language_manager import LanguageManager
+from app.video_handler import VideoHandler
+from app.ui_handler import UIHandler
 from app.config_manager import ConfigManager
 
 class SmileCounterApp:
     def __init__(self, master: tk.Tk) -> None:
         self.master = master
         self.config_manager = ConfigManager()
-        
         self.language_manager = LanguageManager()
         self.language = self.language_manager.language
-        
         self.button_creator = ButtonCreator(self.master, self.language)
         self.options = Options(self.master, self.language, self.language_manager)
         self.ui_handler = UIHandler(self.master, self.language, self.button_creator, self.options)
-        
         self._init_ui()
 
     def change_language(self, lang_code: str) -> None:
