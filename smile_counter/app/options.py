@@ -4,6 +4,9 @@ from typing import Callable
 from app.config_manager import ConfigManager
 
 class Options:
+    # FIXME: This is some serious spaghetti code. Refactor this class if possible.
+    # too many duplicates like self.FACE_SCALE_FACTOR etc.
+
     def __init__(self, master: tk.Tk, language: object, language_manager: object) -> None:
         self.master = master
         self.language = language
@@ -24,11 +27,30 @@ class Options:
     def reload_config(self) -> None:
         """Reload configuration values from config file"""
         config = self.config_manager.get_config()
+        
+        # Update instance variables
         self.FACE_SCALE_FACTOR = config.FACE_SCALE_FACTOR
         self.FACE_MIN_NEIGHBOURS = config.FACE_MIN_NEIGHBOURS
         self.SMILE_SCALE_FACTOR = config.SMILE_SCALE_FACTOR
         self.SMILE_MIN_NEIGHBOURS = config.SMILE_MIN_NEIGHBOURS
         self.TIME_TO_START_COUNTING = config.TIME_TO_START_COUNTING
+
+        # Update entry widgets if they exist
+        if hasattr(self, 'face_scale_entry') and self.face_scale_entry:
+            self.face_scale_entry.delete(0, tk.END)
+            self.face_scale_entry.insert(0, str(self.FACE_SCALE_FACTOR))
+            
+            self.face_min_neighbours_entry.delete(0, tk.END)
+            self.face_min_neighbours_entry.insert(0, str(self.FACE_MIN_NEIGHBOURS))
+            
+            self.smile_scale_entry.delete(0, tk.END)
+            self.smile_scale_entry.insert(0, str(self.SMILE_SCALE_FACTOR))
+            
+            self.smile_min_neighbours_entry.delete(0, tk.END)
+            self.smile_min_neighbours_entry.insert(0, str(self.SMILE_MIN_NEIGHBOURS))
+            
+            self.time_to_start_entry.delete(0, tk.END)
+            self.time_to_start_entry.insert(0, str(self.TIME_TO_START_COUNTING))
 
     def _init_ui_elements(self) -> None:
         self.face_scale_label = None
@@ -91,16 +113,13 @@ class Options:
             }
             
             self.config_manager.update_config(updates)
-            self.reload_config()  # Reload config after save
+            self.reload_config()  # Reload config values
             
-            if self.options_window:
-                self.options_window.destroy()  # Close current window
-                self.show_options()  # Reopen with new values
-                
             messagebox.showinfo("Success", self.language.SUCCESS_MESSAGE_TEXT)
             
         except Exception as e:
             messagebox.showerror("Error", self.language.ERROR_MESSAGE_TEXT.format(error=e))
+
 
     def update_options_text(self, language: object) -> None:
         if self.options_window is not None and tk.Toplevel.winfo_exists(self.options_window):
