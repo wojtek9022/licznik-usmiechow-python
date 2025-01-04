@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.messagebox  # Required for building with pyinstaller
 from app.initialize import ensure_app_initialized
 ensure_app_initialized()  # Initialize before other imports
 
