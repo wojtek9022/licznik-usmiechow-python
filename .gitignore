@@ -168,3 +168,4 @@ Tests/input/*
 smile_counter/src/config.py
 smile_counter/app/src/config.py
 smile_counter/app/src/config.py
+/smile_counter/output

@@ -1,0 +1,92 @@
+import os
+import subprocess
+from pathlib import Path
+
+def build_exe():
+    # Get project root directory
+    project_root = Path(__file__).parents[4]
+    
+    # Define paths and names
+    APP_NAME = "Smile Counter 2"
+    output_dir = project_root / "smile_counter" / "output"
+    icon_path = project_root / "smile_counter" / "app" / "img" / "icon.ico"
+    app_path = project_root / "smile_counter" / "app"
+    main_script = project_root / "smile_counter" / "smile_counter_app.py"
+    
+    # Create output directory if it doesn't exist
+    output_dir.mkdir(exist_ok=True)
+    
+    # Version info
+    VERSION = "2.2.1"
+    FILE_VERSION = VERSION.replace('.', ',')
+    
+    # Create version info
+    version_info = f"""
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=({FILE_VERSION},0),
+    prodvers=({FILE_VERSION},0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo([
+      StringTable(
+        u'040904B0',
+        [StringStruct(u'FileDescription', u'Smile Counter'),
+        StringStruct(u'FileVersion', u'{VERSION}'),
+        StringStruct(u'InternalName', u'smile_counter'),
+        StringStruct(u'LegalCopyright', u'Milosz Malak, Wojciech Goras 2024-2025'),
+        StringStruct(u'OriginalFilename', u'smile_counter.exe'),
+        StringStruct(u'ProductName', u'Smile Counter'),
+        StringStruct(u'ProductVersion', u'{VERSION}')])
+    ]),
+    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ]
+)"""
+
+    # Write version info to file
+    version_file = project_root / "file_version_info.txt"
+    version_file.write_text(version_info)
+    
+    # Build command
+    command = [
+        "pyinstaller",
+        "--clean",  # Clean PyInstaller cache
+        "--noconfirm",
+        "--onefile",
+        "--windowed",
+        "--uac-admin",  # Request admin privileges
+        f"--icon={icon_path}",
+        f"--version-file={version_file}",
+        f"--add-data={app_path};app/",
+        f"--distpath={output_dir}",  # Set output directory
+        f"--workpath={output_dir / 'build'}",  # Set build directory
+        f"--specpath={output_dir}",  # Set spec file directory
+        f"--name={APP_NAME}",  # Set executable name
+        "--hidden-import=tkinter",
+        "--hidden-import=PIL",
+        "--hidden-import=cv2",
+        "--hidden-import=PIL.Image",
+        "--hidden-import=configparser",
+        "--disable-windowed-traceback",  # Reduce executable size
+        "--noupx",  # Disable UPX compression
+        str(main_script)
+    ]
+    
+    try:
+        subprocess.run(command, check=True)
+        print(f"Build completed successfully! Version: {VERSION}")
+        print(f"Output location: {output_dir}")
+        version_file.unlink()  # Clean up version file
+    except subprocess.CalledProcessError as e:
+        print(f"Build failed with error: {e}")
+        if version_file.exists():
+            version_file.unlink()
+
+if __name__ == "__main__":
+    build_exe()
