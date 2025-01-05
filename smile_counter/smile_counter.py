@@ -1,13 +1,13 @@
 import cv2
 import time
-from app.src.video_capture import VideoCapture
+from app.src.video_capture import VideoCaptureWrapper
 from app.src.smile_detector import SmileDetector
 from app.src.fps_calculator import FPSCalculator
 from app.config_handler import ConfigHandler
 
 class SmileCounter:
     def __init__(self):
-        self.video_capture = VideoCapture()
+        self.video_capture = VideoCaptureWrapper()
         self.smile_detector = SmileDetector()
         self.fps_calculator = FPSCalculator()
         self.config = ConfigHandler().get_config()

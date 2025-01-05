@@ -4,23 +4,23 @@ import os
 
 class UIHandler:
     """
-    Manages the application's user interface components and layout.
-
-    This class handles the creation, positioning, and updating of all UI elements
-    including headers, buttons, images, and language-specific content. It manages
-    the main window appearance and coordinates UI updates with language changes.
+    Manages user interface elements and layout for the Smile Counter application.
+    
+    Responsible for creating, managing, and updating all UI components including
+    window layout, image loading, and dynamic content updates. Handles both
+    static UI elements and interactive components.
 
     Attributes:
         master (tk.Tk): Main application window
         language (object): Current language module with text strings
-        button_creator (object): Handler for button creation and management
-        options (object): Application settings and configuration manager
+        button_creator (ButtonCreator): Button creation and management
+        options (OptionsManager): Application configuration manager
         header (tk.Label): Main application header
-        subtitle (tk.Label): Version information subtitle
+        subtitle (tk.Label): Version information label
         logo_label (tk.Label): Application logo display
-        button_frame (tk.Frame): Container for main menu buttons
-        language_frame (tk.Frame): Container for language selection flags
-        logo_path (str): Path to main menu logo image
+        button_frame (tk.Frame): Container for control buttons
+        language_frame (tk.Frame): Container for language selection
+        logo_path (str): Path to logo image file
         icon_path (str): Path to application icon
         flag_en_path (str): Path to English flag image
         flag_pl_path (str): Path to Polish flag image
@@ -48,7 +48,16 @@ class UIHandler:
         icon_photo: ImageTk.PhotoImage = ImageTk.PhotoImage(icon_image)
         self.master.iconphoto(True, icon_photo)
 
-    def create_header(self) -> tuple:
+    def create_header(self) -> tuple[tk.Label, tk.Label, tk.Label]:
+        """
+        Create and configure the application header section.
+
+        Creates main title, subtitle, and logo elements with appropriate
+        styling and positioning in the main window.
+
+        Returns:
+            tuple[tk.Label, tk.Label, tk.Label]: Header, subtitle, and logo labels
+        """
         self.header: tk.Label = tk.Label(self.master, text=self.language.TITLE_TEXT, font=("Helvetica", 24))
         self.header.pack(pady=20)
         self.subtitle: tk.Label = tk.Label(self.master, text=self.language.VERSION_TEXT, font=("Helvetica", 12))
@@ -107,24 +116,24 @@ class UIHandler:
         """
         Create and display the main menu interface.
 
-        Sets up the main menu layout including header, logo,
-        control buttons, and language selection flags.
+        Sets up complete main menu layout including header elements,
+        logo image, control buttons, and language selection options.
         """
 
     def hide_main_menu(self) -> None:
         """
         Hide all main menu elements.
 
-        Removes main menu components from view when switching
-        to video capture mode.
+        Temporarily removes main menu components from view when
+        switching to video capture mode.
         """
 
     def show_main_menu(self) -> None:
         """
         Restore main menu visibility.
 
-        Shows all main menu components when returning from
-        video capture mode.
+        Makes all main menu components visible again when
+        returning from video capture mode.
         """
 
     def update_language(self, language: object) -> None:

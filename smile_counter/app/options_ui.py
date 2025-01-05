@@ -4,6 +4,22 @@ from .options_types import OptionsConfig
 from .options_validator import OptionsValidator
 
 class OptionsUI:
+    """
+    Manages the options configuration window interface.
+
+    This class handles creation and management of the options window,
+    including input validation, error display, and configuration updates.
+
+    Attributes:
+        master (tk.Tk): Main application window
+        language (object): Current language module with text strings
+        validator (OptionsValidator): Options input validator
+        window (Optional[tk.Toplevel]): Options window instance
+        entries (Dict[str, tk.Entry]): Option input fields
+        labels (Dict[str, tk.Label]): Option labels
+        error_labels (Dict[str, tk.Label]): Validation error messages
+    """
+
     def __init__(self, master: tk.Tk, language: object, validator: OptionsValidator):
         self.master = master
         self.language = language
@@ -13,7 +29,21 @@ class OptionsUI:
         self.labels: Dict[str, tk.Label] = {}
         self.error_labels: Dict[str, tk.Label] = {}
 
-    def create_window(self, config_options: OptionsConfig, values: Dict[str, Any], save_callback: Callable) -> None:
+    def create_window(self, config_options: OptionsConfig, 
+                     values: Dict[str, Any], 
+                     save_callback: Callable) -> None:
+        """
+        Create and display the options configuration window.
+
+        Creates a new window or destroys existing one if present.
+        Sets up input fields for all configuration options and
+        adds a save button with the provided callback.
+
+        Args:
+            config_options (OptionsConfig): Configuration options schema
+            values (Dict[str, Any]): Current option values
+            save_callback (Callable): Function to call when saving
+        """
         if self.window and tk.Toplevel.winfo_exists(self.window):
             self.window.destroy()
             
@@ -54,6 +84,15 @@ class OptionsUI:
         self.save_button.grid(row=len(self.entries), columnspan=2, padx=10, pady=10)
 
     def update_language(self, language: object) -> None:
+        """
+        Update UI text elements with new language.
+
+        Updates all labels and window title to display text
+        in the newly selected language.
+
+        Args:
+            language (object): Language module containing text strings
+        """
         self.language = language
         if self.window and tk.Toplevel.winfo_exists(self.window):
             for option_name, label in self.labels.items():

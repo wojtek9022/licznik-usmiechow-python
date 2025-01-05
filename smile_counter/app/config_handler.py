@@ -39,28 +39,18 @@ class ConfigHandler:
     def _load_default_config(self) -> ConfigParser:
         default_config = ConfigParser(comment_prefixes=';', allow_no_value=True)
         default_config.optionxform = str  # Preserve case sensitivity
-            
         print(f"Loading default config from {self.default_config_path}")
         default_config.read(self.default_config_path)
-        
-        # Debug output
-        print("Default config sections:", default_config.sections())
-        for section in default_config.sections():
-            print(f"Section {section} items:", dict(default_config[section]))
-        
         return default_config
             
     def _ensure_config_exists(self) -> None:
         self._create_config_directory()
         default_config = self._load_default_config()
-        
         if not default_config.sections():
             raise RuntimeError("Default config is empty or corrupted")
-            
         if not os.path.exists(self.config_path):
             self._create_initial_config(default_config)
             return
-            
         self._update_existing_config(default_config)
 
     def _create_config_directory(self) -> None:
@@ -77,10 +67,8 @@ class ConfigHandler:
     def _update_existing_config(self, default_config: ConfigParser) -> None:
         self.config.read(self.config_path)
         updated = False
-        
         updated = self._update_missing_sections(default_config)
         updated = self._update_missing_options(default_config) or updated
-        
         if updated:
             self._save_config()
 
@@ -123,13 +111,10 @@ class ConfigHandler:
             print("Settings section missing, reinitializing config")
             self._ensure_config_exists()
             self.config.read(self.config_path)
-        
         settings = dict(self.config['Settings'])
         font = dict(self.config['Font']) if self.config.has_section('Font') else {}
-        
         if 'color' in font:
             font['color'] = eval(font['color'])
-            
         return type('Config', (), {**settings, 'FONT': font})
         
     def update_config(self, updates: Dict[str, Any]) -> None:

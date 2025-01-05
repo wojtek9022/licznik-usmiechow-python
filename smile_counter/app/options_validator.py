@@ -3,6 +3,19 @@ from dataclasses import dataclass
 
 @dataclass
 class ValidationRule:
+    """
+    Data class defining validation rules for configuration options.
+
+    Stores validation parameters for numeric configuration values including
+    allowed ranges, type constraints and error messages.
+
+    Attributes:
+        min_value (float): Minimum allowed value
+        max_value (float): Maximum allowed value
+        type (type): Expected value type (int/float)
+        required (bool): Whether the option is required
+        error_message (str): Custom error message for validation failures
+    """
     min_value: float
     max_value: float
     type: type
@@ -10,6 +23,17 @@ class ValidationRule:
     error_message: str = ""
 
 class OptionsValidator:
+    """
+    Validates configuration options against defined rules.
+
+    Handles validation of all configuration options according to predefined
+    rules including type checking, range validation and required field checking.
+
+    Attributes:
+        validation_rules (Dict[str, ValidationRule]): Dictionary mapping option
+            names to their validation rules
+    """
+
     def __init__(self):
         self.validation_rules = {
             'FACE_SCALE_FACTOR': ValidationRule(
@@ -45,7 +69,16 @@ class OptionsValidator:
         }
 
     def validate_option(self, option_name: str, value: Any) -> Tuple[bool, str]:
-        """Validate single option value"""
+        """
+        Validate a single configuration option.
+
+        Args:
+            option_name (str): Name of the option to validate
+            value (Any): Value to validate
+
+        Returns:
+            Tuple[bool, str]: Validation result (True if valid) and error message
+        """
         if option_name not in self.validation_rules:
             return True, ""
             
@@ -59,7 +92,16 @@ class OptionsValidator:
             return False, f"Invalid value for {option_name}: must be a number"
 
     def validate_config(self, config: Dict[str, Any]) -> Tuple[bool, Dict[str, str]]:
-        """Validate entire configuration"""
+        """
+        Validate entire configuration dictionary.
+
+        Args:
+            config (Dict[str, Any]): Configuration dictionary to validate
+
+        Returns:
+            Tuple[bool, Dict[str, str]]: Validation result and dictionary of
+                error messages keyed by option name
+        """
         errors = {}
         for option_name, value in config.items():
             is_valid, error = self.validate_option(option_name, value)

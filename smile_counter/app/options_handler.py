@@ -8,6 +8,21 @@ from .options_ui import OptionsUI
 from app.src.lang import lang_en, lang_pl
 
 class OptionsHandler:
+    """
+    Handles application configuration and options management.
+
+    This class manages loading, saving, and validating configuration options,
+    as well as handling language changes and UI updates. It serves as a bridge
+    between the configuration storage and the options UI.
+
+    Attributes:
+        master (tk.Tk): Main application window
+        config_handler (ConfigHandler): Configuration file handler
+        language (object): Current language module with text strings
+        validator (OptionsValidator): Options validation handler
+        ui (OptionsUI): Options window UI manager
+        values (Dict[str, Any]): Current configuration values
+    """
     DEFAULT_CONFIG: OptionsConfig = {
         'FACE_SCALE_FACTOR': {'type': float, 'row': 0},
         'FACE_MIN_NEIGHBOURS': {'type': int, 'row': 1},
@@ -34,16 +49,36 @@ class OptionsHandler:
             return lang_en
 
     def change_language(self, lang_code: str) -> None:
+        """
+        Change application language.
+
+        Updates language module and saves selection to configuration.
+
+        Args:
+            lang_code (str): Language code ('en' or 'pl')
+        """
         self.language = lang_pl if lang_code == 'pl' else lang_en
         self.config_handler.update_config({'LANGUAGE': lang_code})
         self.ui.update_language(self.language)  # Update UI directly
 
     def load_config(self) -> None:
+        """
+        Load configuration values from storage.
+
+        Reads configuration from file and validates against default values.
+        Missing options are replaced with defaults.
+        """
         config = self.config_handler.get_config()
         for option_name, options in self.DEFAULT_CONFIG.items():
             self.values[option_name] = options['type'](getattr(config, option_name))
 
     def save_options(self) -> None:
+        """
+        Save current options to configuration file.
+
+        Validates all inputs before saving. Shows success/error message
+        to user based on validation result.
+        """
         try:
             # Validate all entries
             all_valid = True
@@ -66,8 +101,20 @@ class OptionsHandler:
             messagebox.showerror("Error", self.language.ERROR_MESSAGE_TEXT.format(error=e))
 
     def show_options(self) -> None:
+        """
+        Display the options configuration window.
+
+        Creates new window if none exists or brings existing one to front.
+        Initializes all input fields with current values.
+        """
         self.ui.create_window(self.DEFAULT_CONFIG, self.values, self.save_options)
 
     def update_language(self, language: object) -> None:
+        """
+        Update UI text elements with new language.
+
+        Args:
+            language (object): Language module containing text strings
+        """
         self.language = language
         self.ui.update_language(language)

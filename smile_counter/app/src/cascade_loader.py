@@ -1,9 +1,31 @@
 import cv2
 import os
+from typing import Tuple
 
 class CascadeLoader:
+    """
+    Handles loading of OpenCV cascade classifiers for face and smile detection.
+
+    This class provides static methods for loading haar cascade classifier files
+    from predefined locations. It validates classifier files existence and
+    ensures proper loading before returning classifier objects.
+    """
+
     @staticmethod
-    def load_cascades():
+    def load_cascades() -> Tuple[cv2.CascadeClassifier, cv2.CascadeClassifier]:
+        """
+        Load face and smile cascade classifiers.
+
+        Loads haar cascade classifier files from the data directory and
+        validates their existence and proper loading.
+
+        Returns:
+            Tuple[cv2.CascadeClassifier, cv2.CascadeClassifier]: 
+                Tuple containing (smile_cascade, face_cascade) classifiers
+
+        Raises:
+            Exception: If either cascade file is missing or fails to load
+        """
         current_dir = os.path.dirname(__file__)
         face_cascade_path = os.path.join(current_dir, 'data/haar_classifiers/haarcascade_frontalface_default.xml')
         smile_cascade_path = os.path.join(current_dir, 'data/haar_classifiers/haarcascade_smile.xml')
