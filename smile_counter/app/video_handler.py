@@ -1,5 +1,5 @@
 import cv2
-from app.src.video_capture import VideoCaptureWrapper
+from app.src.video_capture_wrapper import VideoCaptureWrapper
 from app.src.smile_detector import SmileDetector
 from app.src.fps_calculator import FPSCalculator
 from PIL import Image, ImageTk
@@ -41,7 +41,7 @@ class VideoHandler:
         self.language_frame = language_frame
         self.video_frame: Optional[tk.Frame] = None
         self.canvas: Optional[tk.Canvas] = None
-        self.video_capture: Optional[VideoCaptureWrapper] = None
+        self.video_capture_wrapper: Optional[VideoCaptureWrapper] = None
         self.smile_detector: SmileDetector = SmileDetector()
         self.fps_calculator: FPSCalculator = FPSCalculator()
         self.smiles_detected: int = 0
@@ -56,7 +56,7 @@ class VideoHandler:
         """
         self._hide_main_menu()
         self._setup_video_frame()
-        self.video_capture = VideoCaptureWrapper()
+        self.video_capture_wrapper = VideoCaptureWrapper()
         self.running = True
         self.update_frame()
 
@@ -89,7 +89,7 @@ class VideoHandler:
         updates smile counter and FPS display, and schedules next frame update.
         """
         if self.running:
-            ret, frame = self.video_capture.read()
+            ret, frame = self.video_capture_wrapper.read()
             if ret:
                 self._process_frame(frame)
                 self.canvas.after(10, self.update_frame)

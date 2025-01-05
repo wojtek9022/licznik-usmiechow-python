@@ -1,13 +1,13 @@
 import cv2
 import time
-from app.src.video_capture import VideoCaptureWrapper
+from app.src.video_capture_wrapper import VideoCaptureWrapper
 from app.src.smile_detector import SmileDetector
 from app.src.fps_calculator import FPSCalculator
 from app.config_handler import ConfigHandler
 
 class SmileCounter:
     def __init__(self):
-        self.video_capture = VideoCaptureWrapper()
+        self.video_capture_wrapper = VideoCaptureWrapper()
         self.smile_detector = SmileDetector()
         self.fps_calculator = FPSCalculator()
         self.config = ConfigHandler().get_config()
@@ -27,7 +27,7 @@ class SmileCounter:
 
     def process_video(self):
         while True:
-            check, frame = self.video_capture.read()
+            check, frame = self.video_capture_wrapper.read()
             if not check:
                 break
 
@@ -57,7 +57,7 @@ class SmileCounter:
             if cv2.waitKey(30) & 0xFF == 27:  # Exit on escape key
                 break
 
-        self.video_capture.release()
+        self.video_capture_wrapper.release()
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":

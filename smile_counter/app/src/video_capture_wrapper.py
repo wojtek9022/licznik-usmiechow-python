@@ -20,7 +20,7 @@ class VideoCaptureWrapper:
             source (int, optional): Camera index or video file path. 
                                   Defaults to 0 (first available camera).
         """
-        self.capture = cv2.VideoCaptureWrapper(source)
+        self.capture = cv2.VideoCapture(source)
 
     def read(self) -> Tuple[bool, Any]:
         """

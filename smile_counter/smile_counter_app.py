@@ -75,11 +75,10 @@ class SmileCounterApp:
         """
         Handle application closing.
 
-        Properly releases video capture resources if active and
-        closes the application window.
+        Releases video capture resources if active and closes application window.
         """
-        if self.video_handler.video_capture:
-            self.video_handler.video_capture.release()
+        if self.video_handler.video_capture_wrapper:
+            self.video_handler.video_capture_wrapper.release()
         self.master.destroy()
 
     def start_video(self) -> None:

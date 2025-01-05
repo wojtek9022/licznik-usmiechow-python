@@ -1,5 +1,5 @@
 import time
-from typing import float
+from typing import Union
 
 class FPSCalculator:
     """
@@ -15,7 +15,7 @@ class FPSCalculator:
     """
 
     def __init__(self):
-        self.prev_time = 0
+        self.prev_time = 0.0
         self.frames = 0
 
     def calculate(self, current_time: float) -> float:
