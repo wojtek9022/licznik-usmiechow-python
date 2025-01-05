@@ -5,10 +5,8 @@ ensure_app_initialized()  # Initialize before other imports
 
 from app.button_creator import ButtonCreator
 from app.options.options_manager import OptionsManager as Options
-from app.language_manager import LanguageManager
 from app.video_handler import VideoHandler
 from app.ui_handler import UIHandler
-from app.config_manager import ConfigManager
 
 class SmileCounterApp:
     def __init__(self, master: tk.Tk) -> None:
