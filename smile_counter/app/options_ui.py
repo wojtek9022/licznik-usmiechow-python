@@ -29,6 +29,17 @@ class OptionsUI:
         self.labels: Dict[str, tk.Label] = {}
         self.error_labels: Dict[str, tk.Label] = {}
 
+    def on_language_change(self, language: object) -> None:
+        """Handle language change event."""
+        self.language = language
+        if self.window and tk.Toplevel.winfo_exists(self.window):
+            self.window.title(language.OPTIONS_TITLE_TEXT)
+            for option_name, label in self.labels.items():
+                label_text = getattr(language, f"{option_name}_TEXT")
+                label.config(text=label_text)
+            if hasattr(self, "save_button"):
+                self.save_button.config(text=language.SAVE_BUTTON_TEXT)
+
     def create_window(self, config_options: OptionsConfig, 
                      values: Dict[str, Any], 
                      save_callback: Callable) -> None:
@@ -82,27 +93,6 @@ class OptionsUI:
             command=save_callback
         )
         self.save_button.grid(row=len(self.entries), columnspan=2, padx=10, pady=10)
-
-    def update_language(self, language: object) -> None:
-        """
-        Update UI text elements with new language.
-
-        Updates all labels and window title to display text
-        in the newly selected language.
-
-        Args:
-            language (object): Language module containing text strings
-        """
-        self.language = language
-        if self.window and tk.Toplevel.winfo_exists(self.window):
-            for option_name, label in self.labels.items():
-                label_text = getattr(language, f'{option_name}_TEXT')
-                label.config(text=label_text)
-            self.window.title(language.OPTIONS_TITLE_TEXT)
-            
-            # Update save button text
-            if hasattr(self, 'save_button'):
-                self.save_button.config(text=language.SAVE_BUTTON_TEXT)
 
     def _validate_entry(self, option_name: str) -> bool:
         value = self.entries[option_name].get()

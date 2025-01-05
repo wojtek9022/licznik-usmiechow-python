@@ -4,13 +4,15 @@ from app.src.video_capture_wrapper import VideoCaptureWrapper
 from app.src.smile_detector import SmileDetector
 from app.src.fps_calculator import FPSCalculator
 from app.config_handler import ConfigHandler
+from app.src.lang import lang_en, lang_pl
 
 class SmileCounter:
-    def __init__(self):
+    def __init__(self, language=None):
         self.video_capture_wrapper = VideoCaptureWrapper()
         self.smile_detector = SmileDetector()
         self.fps_calculator = FPSCalculator()
         self.config = ConfigHandler().get_config()
+        self.language = language if language else lang_en
 
     def display_text(self, frame, text, position):
         font = self.config.FONT
@@ -48,7 +50,7 @@ class SmileCounter:
                 #self.fps_calculator.increment_frames()  # Increment frames before calculating
                 #fps = self.fps_calculator.calculate(current_time)
                 #text_to_show = f"Detected smiles: {self.smile_detector.smiles_detected} | FPS: {round(fps)}"
-                text_to_show = f"Detected smiles: {self.smile_detector.smiles_detected}"
+                text_to_show = f"{self.language.DETECTED_SMILES_TEXT}: {self.smile_detector.smiles_detected}"
                 h, w, _ = frame.shape
                 self.display_text(frame, text_to_show, (round(w / 4), round(h / 8)))
 

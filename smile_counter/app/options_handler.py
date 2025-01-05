@@ -31,35 +31,24 @@ class OptionsHandler:
         'TIME_TO_START_COUNTING': {'type': float, 'row': 4}
     }
 
-    def __init__(self, master: tk.Tk):
+    def __init__(self, master: tk.Tk, language: object) -> None:
         self.master = master
         self.config_handler = ConfigHandler()
-        self.language = self._load_language()
+        self.language = language  # Get language from UIHandler
         self.validator = OptionsValidator()
         self.ui = OptionsUI(master, self.language, self.validator)
         self.values: Dict[str, Any] = {}
         self.load_config()
 
-    def _load_language(self) -> object:
-        config = self.config_handler.get_config()
-        try:
-            language = config.get('LANGUAGE', fallback='en')
-            return lang_pl if language == 'pl' else lang_en
-        except Exception:
-            return lang_en
-
-    def change_language(self, lang_code: str) -> None:
+    def update_language(self, language: object) -> None:
         """
-        Change application language.
-
-        Updates language module and saves selection to configuration.
-
+        Update OptionsHandler language from UIHandler.
+        
         Args:
-            lang_code (str): Language code ('en' or 'pl')
+            language (object): New language module
         """
-        self.language = lang_pl if lang_code == 'pl' else lang_en
-        self.config_handler.update_config({'LANGUAGE': lang_code})
-        self.ui.update_language(self.language)  # Update UI directly
+        self.language = language
+        self.ui.on_language_change(self.language)
 
     def load_config(self) -> None:
         """
@@ -108,13 +97,3 @@ class OptionsHandler:
         Initializes all input fields with current values.
         """
         self.ui.create_window(self.DEFAULT_CONFIG, self.values, self.save_options)
-
-    def update_language(self, language: object) -> None:
-        """
-        Update UI text elements with new language.
-
-        Args:
-            language (object): Language module containing text strings
-        """
-        self.language = language
-        self.ui.update_language(language)

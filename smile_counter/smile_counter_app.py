@@ -31,25 +31,23 @@ class SmileCounterApp:
     """
     def __init__(self, master: tk.Tk) -> None:
         self.master = master
-        self.options = Options(self.master)
-        self.language = self.options.language
-        self.button_handler = ButtonHandler(self.master, self.language)
-        self.ui_handler = UIHandler(self.master, self.language, self.button_handler, self.options)
+        self.button_handler = ButtonHandler(self.master, None)  # Initially no language
+        self.options = Options(self.master, None)  # Initially no language
+        self.ui_handler = UIHandler(self.master, self.button_handler, self.options)
+        self.language = self.ui_handler.language  # Get language from UIHandler
+        self.button_handler.language = self.language  # Update ButtonHandler with language
+        self.options.update_language(self.language)  # Update Options with language
         self._init_ui()
 
     def change_language(self, lang_code: str) -> None:
         """
-        Change application language and update all UI elements.
-
-        Changes the application's language based on the provided language code
-        and updates all UI components to display text in the new language.
-
+        Change application language through UIHandler.
+        
         Args:
             lang_code (str): Language code to switch to ('en' or 'pl')
         """
-        self.options.change_language(lang_code)
-        self.language = self.options.language
-        self.ui_handler.update_language(language=self.language)
+        self.ui_handler.change_language(lang_code)
+        self.language = self.ui_handler.language
 
     def _init_ui(self) -> None:
         self.header, self.subtitle, self.logo_label = self.ui_handler.create_header()
@@ -59,15 +57,6 @@ class SmileCounterApp:
             self.on_closing
         )
         self.language_frame = self.ui_handler.create_language_buttons(self.change_language)
-        self.video_handler = VideoHandler(
-            self.master,
-            self.language,
-            self.header,
-            self.subtitle,
-            self.logo_label,
-            self.button_frame,
-            self.language_frame
-        )
 
     def on_closing(self) -> None:
         """
@@ -86,6 +75,15 @@ class SmileCounterApp:
         Initializes video capture, hides main menu, and starts
         the smile detection process.
         """
+        self.video_handler = VideoHandler(
+            self.master, 
+            self.language,
+            self.header,
+            self.subtitle,
+            self.logo_label,
+            self.button_frame,
+            self.language_frame
+        )
         self.video_handler.start_video()
 
     def show_options(self) -> None:

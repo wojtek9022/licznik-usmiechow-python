@@ -1,19 +1,17 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 import os
+from .src.lang import lang_pl, lang_en
+from app.config_handler import ConfigHandler
 
 class UIHandler:
     """
-    Manages user interface elements and layout for the Smile Counter application.
-    
-    Responsible for creating, managing, and updating all UI components including
-    window layout, image loading, and dynamic content updates. Handles both
-    static UI elements and interactive components.
+    Manages user interface elements and layout.
 
     Attributes:
         master (tk.Tk): Main application window
-        language (object): Current language module with text strings
-        button_creator (ButtonCreator): Button creation and management
+        language (object): Current language module
+        button_handler (ButtonHandler): Button creation and management
         options (OptionsManager): Application configuration manager
         header (tk.Label): Main application header
         subtitle (tk.Label): Version information label
@@ -26,13 +24,43 @@ class UIHandler:
         flag_pl_path (str): Path to Polish flag image
     """
 
-    def __init__(self, master: tk.Tk, language: object, button_creator: object, options: object) -> None:
+    def __init__(self, master: tk.Tk, button_handler: object, options: object) -> None:
         self.master = master
-        self.language = language
-        self.button_creator = button_creator
+        self.config_handler = ConfigHandler()
+        self.language = self._load_language()
+        self.button_handler = button_handler
         self.options = options
         self._setup_main_window()
         self._load_images()
+
+    def _load_language(self) -> object:
+        """Load language based on config or default to English."""
+        config = self.config_handler.get_config()
+        try:
+            language = config.get('LANGUAGE', fallback='en')
+            return lang_pl if language == 'pl' else lang_en
+        except Exception:
+            return lang_en
+
+    def change_language(self, lang_code: str) -> None:
+        """
+        Central method for changing application language.
+        
+        Args:
+            lang_code (str): Language code ('en' or 'pl')
+        """
+        self.language = lang_pl if lang_code == "pl" else lang_en
+        self.config_handler.update_config({"LANGUAGE": lang_code})
+        self._update_all_ui()
+
+    def _update_all_ui(self) -> None:
+        """Update all UI components with new language."""
+        self.master.title(self.language.TITLE_TEXT)
+        self.header.config(text=self.language.TITLE_TEXT)
+        self.subtitle.config(text=self.language.VERSION_TEXT)
+        self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
+        self.button_handler.update_buttons(self.language)
+        self.options.update_language(self.language)
 
     def _setup_main_window(self) -> None:
         self.master.title(self.language.TITLE_TEXT)
@@ -109,7 +137,7 @@ class UIHandler:
         self.header.config(text=self.language.TITLE_TEXT)
         self.subtitle.config(text=self.language.VERSION_TEXT)
         self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
-        self.button_creator.update_buttons(self.language)
+        self.button_handler.update_buttons(self.language)
         self.options.update_language(self.language)  # Use direct update method
 
     def create_main_menu(self) -> None:
@@ -138,10 +166,49 @@ class UIHandler:
 
     def update_language(self, language: object) -> None:
         """
-        Update UI text elements with new language.
+        Update all UI text elements with new language.
+
+        Updates main window and options window text elements
+        to display content in the newly selected language.
 
         Args:
             language (object): Language module containing text strings
         """
         self.language = language
-        self._refresh_ui()
+        self.master.title(self.language.TITLE_TEXT)
+        self.header.config(text=self.language.TITLE_TEXT)
+        self.subtitle.config(text=self.language.VERSION_TEXT)
+        self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
+        self.button_handler.update_buttons(self.language)
+        
+        # Update options window if exists
+        if hasattr(self.options.ui, 'window') and self.options.ui.window:
+            self._update_options_language(language)
+
+    def _update_options_language(self, language: object) -> None:
+        """Update options window text elements."""
+        window = self.options.ui.window
+        if window and tk.Toplevel.winfo_exists(window):
+            window.title(language.OPTIONS_TITLE_TEXT)
+            # Update labels
+            for option_name, label in self.options.ui.labels.items():
+                label_text = getattr(language, f'{option_name}_TEXT')
+                label.config(text=label_text)
+            # Update save button
+            if hasattr(self.options.ui, 'save_button'):
+                self.options.ui.save_button.config(text=language.SAVE_BUTTON_TEXT)
+
+    def on_language_change(self, language: object) -> None:
+        """
+        Handle language change event.
+
+        Args:
+            language (object): New language module
+        """
+        self.language = language
+        self.master.title(self.language.TITLE_TEXT)
+        self.header.config(text=self.language.TITLE_TEXT)
+        self.subtitle.config(text=self.language.VERSION_TEXT)
+        self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
+        self.button_handler.update_buttons(self.language)
+        self._update_options_if_exists(language)

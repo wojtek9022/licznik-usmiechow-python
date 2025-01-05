@@ -23,35 +23,25 @@ class SmileDetector:
         self.last_smile_time = 0
         self.config = ConfigHandler().get_config()
 
-    def detect_faces_and_smiles(self, frame):
-        """Process frame for face and smile detection."""
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    def detect_faces(self, gray_frame) -> list:
+        """Detect faces in grayscale frame."""
+        scale_factor = float(self.config.FACE_SCALE_FACTOR)
+        min_neighbors = int(self.config.FACE_MIN_NEIGHBOURS)
         
-        faces = self.face_cascade.detectMultiScale(
-            gray,
-            scaleFactor=self.config.FACE_SCALE_FACTOR,
-            minNeighbors=self.config.FACE_MIN_NEIGHBOURS
+        return self.face_cascade.detectMultiScale(
+            gray_frame,
+            scaleFactor=scale_factor,
+            minNeighbors=min_neighbors
         )
 
-        for (x, y, w, h) in faces:
-            roi_gray = gray[y:y + h, x:x + w]
-            
-            smiles = self.smile_cascade.detectMultiScale(
-                roi_gray,
-                scaleFactor=self.config.SMILE_SCALE_FACTOR,
-                minNeighbors=self.config.SMILE_MIN_NEIGHBOURS
-            )
+    def detect_smiles(self, roi_gray) -> list:
+        """Detect smiles in face region."""
+        scale_factor = float(self.config.SMILE_SCALE_FACTOR)
+        min_neighbors = int(self.config.SMILE_MIN_NEIGHBOURS)
+        
+        return self.smile_cascade.detectMultiScale(
+            roi_gray,
+            scaleFactor=scale_factor,
+            minNeighbors=min_neighbors
+        )
 
-            if len(smiles) > 0:
-                if not self.smile_active:
-                    current_time = time.time()
-                    if current_time - self.last_smile_time > self.config.TIME_TO_START_COUNTING:
-                        self.smiles_detected += 1
-                        self.smile_active = True
-                        self.last_smile_time = current_time
-            else:
-                self.smile_active = False
-
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-
-        return frame, self.smiles_detected
