@@ -27,7 +27,11 @@ class ConfigHandler:
         
     def __init__(self):
         if not hasattr(self, 'initialized'):
-            self.config = ConfigParser(comment_prefixes=';', allow_no_value=True)
+            self.config = ConfigParser(
+                comment_prefixes=('#',';'),
+                allow_no_value=True,
+                inline_comment_prefixes=(';',)
+            )
             self.config.optionxform = str
             self.config_dir = os.path.join(str(Path.home()), '.smile_counter')
             self.config_path = os.path.join(self.config_dir, 'config.ini')
@@ -102,19 +106,39 @@ class ConfigHandler:
 
         Returns:
             Any: Object-like structure containing configuration values
-                 with attributes matching config options
         """
-        # Ensure config is loaded
         self.config.read(self.config_path)
         
         if not self.config.has_section('Settings'):
             print("Settings section missing, reinitializing config")
             self._ensure_config_exists()
             self.config.read(self.config_path)
-        settings = dict(self.config['Settings'])
-        font = dict(self.config['Font']) if self.config.has_section('Font') else {}
-        if 'color' in font:
-            font['color'] = eval(font['color'])
+            
+        settings = {}
+        for k, v in self.config['Settings'].items():
+            try:
+                # Handle None values and missing semicolons
+                if v is None:
+                    settings[k] = ""
+                elif ';' in v:
+                    settings[k] = v.split(';')[0].strip()
+                else:
+                    settings[k] = v.strip()
+            except Exception as e:
+                print(f"Error parsing config value for {k}: {e}")
+                settings[k] = ""
+
+        font = {}
+        if self.config.has_section('Font'):
+            for k, v in self.config['Font'].items():
+                if k == 'color' and v:
+                    try:
+                        font[k] = eval(v)
+                    except:
+                        font[k] = (255, 0, 0)  # Default color
+                else:
+                    font[k] = v
+
         return type('Config', (), {**settings, 'FONT': font})
         
     def update_config(self, updates: Dict[str, Any]) -> None:

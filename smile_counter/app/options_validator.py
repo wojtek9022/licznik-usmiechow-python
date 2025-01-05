@@ -61,7 +61,7 @@ class OptionsValidator:
                 error_message="Smile minimum neighbours must be between 1 and 200"
             ),
             'TIME_TO_START_COUNTING': ValidationRule(
-                min_value=0.1,
+                min_value=0.01,
                 max_value=10.0,
                 type=float,
                 error_message="Time must be between 0.1 and 10.0 seconds"

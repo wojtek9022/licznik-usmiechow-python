@@ -1,5 +1,5 @@
 TITLE_TEXT = "Licznik Uśmiechów"
-VERSION_TEXT = "Wersja: 2.1.1"
+VERSION_TEXT = "Wersja: 2.2.0"
 START_BUTTON_TEXT = "Start"
 OPTIONS_BUTTON_TEXT = "Opcje"
 EXIT_BUTTON_TEXT = "Wyjście"
