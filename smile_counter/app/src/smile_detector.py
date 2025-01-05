@@ -60,8 +60,10 @@ class SmileDetector:
             face_y (int): Y coordinate of face region
         """
         current_time = time.time()
+        cooldown_time = float(self.config.COUNTED_SMILE_COOLDOWN_TIME)
+        
         if smile_detected:
-            if not self.smile_active and (current_time - self.last_smile_time) > float(self.config.TIME_TO_START_COUNTING):
+            if not self.smile_active and (current_time - self.last_smile_time) > cooldown_time:
                 self.smiles_detected += 1
                 self.smile_active = True
                 self.last_smile_time = current_time

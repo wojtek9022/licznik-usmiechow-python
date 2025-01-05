@@ -5,6 +5,7 @@ from app.src.fps_calculator import FPSCalculator
 from PIL import Image, ImageTk
 import tkinter as tk
 from typing import Optional
+import time
 
 class VideoHandler:
     """
@@ -45,6 +46,9 @@ class VideoHandler:
         self.canvas = None
         self.smiles_detected = 0
         self.master.bind('<Escape>', self._handle_escape)
+        self.show_counted_text = False
+        self.counted_text_timestamp = 0
+        self.SMILE_TEXT_DURATION = 2.0  # seconds
 
     def setup_video_canvas(self) -> None:
         """Set up video display canvas."""
@@ -115,8 +119,10 @@ class VideoHandler:
 
             smile_detected = len(smiles) > 0
             self.smile_detector.handle_smile_and_draw(smile_detected, frame, smiles, face_x, face_y)
+            if smile_detected and self.smiles_detected < self.smile_detector.smiles_detected:
+                self.show_counted_text = True
+                self.counted_text_timestamp = time.time()
             self.smiles_detected = self.smile_detector.smiles_detected
-
         self._display_frame(frame)
 
     def _handle_escape(self, event) -> None:
@@ -134,3 +140,16 @@ class VideoHandler:
 
         text_to_show = self.language.DETECTED_SMILES_TEXT.format(count=self.smiles_detected)
         self.canvas.create_text(10, 10, anchor=tk.NW, text=text_to_show, fill="red", font=("Helvetica", 16))
+
+        # Display smile counted text
+        if self.show_counted_text:
+            if time.time() - self.counted_text_timestamp > self.SMILE_TEXT_DURATION:
+                self.show_counted_text = False
+            else:
+                self.canvas.create_text(
+                    self.canvas.winfo_width() // 2,
+                    self.canvas.winfo_height() // 4,
+                    text=self.language.SMILE_COUNTED_TEXT,
+                    fill="green",
+                    font=("Helvetica", 28, "bold")
+                )

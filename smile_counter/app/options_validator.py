@@ -38,21 +38,21 @@ class OptionsValidator:
         self.validation_rules = {
             'FACE_SCALE_FACTOR': ValidationRule(
                 min_value=1.01,
-                max_value=2.0,
+                max_value=20.0,
                 type=float,
-                error_message="Face scale factor must be between 1.01 and 2.0"
+                error_message="Face scale factor must be between 1.01 and 20.0"
             ),
             'FACE_MIN_NEIGHBOURS': ValidationRule(
                 min_value=1,
-                max_value=20,
+                max_value=1000,
                 type=int,
-                error_message="Face minimum neighbours must be between 1 and 20"
+                error_message="Face minimum neighbours must be between 1 and 1000"
             ),
             'SMILE_SCALE_FACTOR': ValidationRule(
                 min_value=1.01,
-                max_value=10.0,
+                max_value=20.0,
                 type=float,
-                error_message="Smile scale factor must be between 1.01 and 10.0"
+                error_message="Smile scale factor must be between 1.01 and 20.0"
             ),
             'SMILE_MIN_NEIGHBOURS': ValidationRule(
                 min_value=1,

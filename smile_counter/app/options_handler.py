@@ -29,7 +29,8 @@ class OptionsHandler:
         'SMILE_SCALE_FACTOR': {'type': float, 'row': 2},
         'SMILE_MIN_NEIGHBOURS': {'type': int, 'row': 3},
         'TIME_TO_START_COUNTING': {'type': float, 'row': 4},
-        'DEBUG_MODE': {'type': bool, 'row': 5}  # Ensure DEBUG_MODE is in config
+        'COUNTED_SMILE_COOLDOWN_TIME': {'type': float, 'row': 5},
+        'DEBUG_MODE': {'type': bool, 'row': 6}  # Ensure DEBUG_MODE is in config
     }
 
     def __init__(self, master: tk.Tk, language: object) -> None:
