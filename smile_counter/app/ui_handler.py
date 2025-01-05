@@ -77,6 +77,5 @@ class UIHandler:
         self.header.config(text=self.language.TITLE_TEXT)
         self.subtitle.config(text=self.language.VERSION_TEXT)
         self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
-        # Refresh buttons and other UI elements
         self.button_creator.update_buttons(self.language)
-        self.options.update_options_text(self.language)
+        self.options.update_language(self.language)  # Use direct update method

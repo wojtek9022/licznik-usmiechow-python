@@ -12,14 +12,13 @@ class ConfigHandler:
         
     def __init__(self):
         if not hasattr(self, 'initialized'):
-            self.config = ConfigParser()
+            self.config = ConfigParser(comment_prefixes=';', allow_no_value=True)
+            self.config.optionxform = str
             self.config_dir = os.path.join(str(Path.home()), '.smile_counter')
             self.config_path = os.path.join(self.config_dir, 'config.ini')
             
-            # Fix default config path resolution
             current_dir = os.path.dirname(os.path.abspath(__file__))
             self.default_config_path = os.path.join(current_dir, 'src', 'utils', 'default_config.ini')
-            print(f"Default config path: {self.default_config_path}")  # Debug print
             
             self._ensure_config_exists()
             self.initialized = True
