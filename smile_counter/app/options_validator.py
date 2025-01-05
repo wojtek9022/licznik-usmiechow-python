@@ -9,7 +9,7 @@ class ValidationRule:
     required: bool = True
     error_message: str = ""
 
-class ConfigValidator:
+class OptionsValidator:
     def __init__(self):
         self.validation_rules = {
             'FACE_SCALE_FACTOR': ValidationRule(

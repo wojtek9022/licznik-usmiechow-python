@@ -1,13 +1,13 @@
 import tkinter as tk
 from typing import Dict, Any
 from tkinter import messagebox
-from app.config_handler import ConfigHandler
+from .config_handler import ConfigHandler
 from .options_types import OptionsConfig
-from .config_validator import ConfigValidator
+from .options_validator import OptionsValidator
 from .options_ui import OptionsUI
 from app.src.lang import lang_en, lang_pl
 
-class OptionsManager:
+class OptionsHandler:
     DEFAULT_CONFIG: OptionsConfig = {
         'FACE_SCALE_FACTOR': {'type': float, 'row': 0},
         'FACE_MIN_NEIGHBOURS': {'type': int, 'row': 1},
@@ -20,7 +20,7 @@ class OptionsManager:
         self.master = master
         self.config_handler = ConfigHandler()
         self.language = self._load_language()
-        self.validator = ConfigValidator()
+        self.validator = OptionsValidator()
         self.ui = OptionsUI(master, self.language, self.validator)
         self.values: Dict[str, Any] = {}
         self.load_config()

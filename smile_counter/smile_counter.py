@@ -3,16 +3,27 @@ import time
 from app.src.video_capture import VideoCapture
 from app.src.smile_detector import SmileDetector
 from app.src.fps_calculator import FPSCalculator
-from app.src.config import FONT
+from app.config_handler import ConfigHandler
 
 class SmileCounter:
     def __init__(self):
         self.video_capture = VideoCapture()
         self.smile_detector = SmileDetector()
         self.fps_calculator = FPSCalculator()
+        self.config = ConfigHandler().get_config()
 
     def display_text(self, frame, text, position):
-        cv2.putText(frame, text, position, getattr(cv2, f'FONT_{FONT["font"]}'), FONT['scale'], FONT['color'], FONT['thickness'], FONT['line_type'])
+        font = self.config.FONT
+        cv2.putText(
+            frame, 
+            text, 
+            position, 
+            getattr(cv2, f'FONT_{font["font"]}'),
+            font['scale'],
+            eval(font['color']) if isinstance(font['color'], str) else font['color'],
+            font['thickness'],
+            font['line_type']
+        )
 
     def process_video(self):
         while True:

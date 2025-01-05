@@ -7,6 +7,30 @@ import tkinter as tk
 from typing import Optional
 
 class VideoHandler:
+    """
+    Handles video capture and smile detection processing.
+
+    This class manages the video capture stream, smile detection logic,
+    and UI updates related to video display. It coordinates between
+    the camera input, smile detection algorithm, and the UI components.
+
+    Attributes:
+        master (tk.Tk): Main application window
+        language (object): Current language module with text strings
+        header (tk.Label): Application header label
+        subtitle (tk.Label): Application subtitle label
+        logo_label (tk.Label): Logo display label
+        button_frame (tk.Frame): Frame containing control buttons
+        language_frame (tk.Frame): Frame containing language selection
+        video_frame (Optional[tk.Frame]): Frame for video display
+        canvas (Optional[tk.Canvas]): Canvas for rendering video
+        video_capture (Optional[VideoCapture]): Video capture handler
+        smile_detector (SmileDetector): Smile detection processor
+        fps_calculator (FPSCalculator): FPS calculation utility
+        smiles_detected (int): Counter for detected smiles
+        running (bool): Video processing state flag
+    """
+
     def __init__(self, master: tk.Tk, language: object, header: tk.Label, subtitle: tk.Label, logo_label: tk.Label, button_frame: tk.Frame, language_frame: tk.Frame) -> None:
         self.master = master
         self.language = language
@@ -24,11 +48,25 @@ class VideoHandler:
         self.running: bool = False
 
     def start_video(self) -> None:
+        """
+        Start video capture and smile detection.
+
+        Initializes video capture, hides main menu elements,
+        sets up video display frame and starts frame processing loop.
+        """
         self._hide_main_menu()
         self._setup_video_frame()
         self.video_capture = VideoCapture()
         self.running = True
         self.update_frame()
+
+    def stop_video(self) -> None:
+        """
+        Stop video capture and processing.
+
+        Releases video capture resources, stops frame processing,
+        and returns to main menu view.
+        """
 
     def _hide_main_menu(self) -> None:
         self.header.pack_forget()
@@ -44,6 +82,12 @@ class VideoHandler:
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
     def update_frame(self) -> None:
+        """
+        Process and display the next video frame.
+
+        Captures frame from camera, processes it for smile detection,
+        updates smile counter and FPS display, and schedules next frame update.
+        """
         if self.running:
             ret, frame = self.video_capture.read()
             if ret:

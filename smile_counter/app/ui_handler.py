@@ -3,6 +3,29 @@ from PIL import Image, ImageTk
 import os
 
 class UIHandler:
+    """
+    Manages the application's user interface components and layout.
+
+    This class handles the creation, positioning, and updating of all UI elements
+    including headers, buttons, images, and language-specific content. It manages
+    the main window appearance and coordinates UI updates with language changes.
+
+    Attributes:
+        master (tk.Tk): Main application window
+        language (object): Current language module with text strings
+        button_creator (object): Handler for button creation and management
+        options (object): Application settings and configuration manager
+        header (tk.Label): Main application header
+        subtitle (tk.Label): Version information subtitle
+        logo_label (tk.Label): Application logo display
+        button_frame (tk.Frame): Container for main menu buttons
+        language_frame (tk.Frame): Container for language selection flags
+        logo_path (str): Path to main menu logo image
+        icon_path (str): Path to application icon
+        flag_en_path (str): Path to English flag image
+        flag_pl_path (str): Path to Polish flag image
+    """
+
     def __init__(self, master: tk.Tk, language: object, button_creator: object, options: object) -> None:
         self.master = master
         self.language = language
@@ -79,3 +102,35 @@ class UIHandler:
         self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
         self.button_creator.update_buttons(self.language)
         self.options.update_language(self.language)  # Use direct update method
+
+    def create_main_menu(self) -> None:
+        """
+        Create and display the main menu interface.
+
+        Sets up the main menu layout including header, logo,
+        control buttons, and language selection flags.
+        """
+
+    def hide_main_menu(self) -> None:
+        """
+        Hide all main menu elements.
+
+        Removes main menu components from view when switching
+        to video capture mode.
+        """
+
+    def show_main_menu(self) -> None:
+        """
+        Restore main menu visibility.
+
+        Shows all main menu components when returning from
+        video capture mode.
+        """
+
+    def update_language(self, language: object) -> None:
+        """
+        Update UI text elements with new language.
+
+        Args:
+            language (object): Language module containing text strings
+        """

@@ -1,10 +1,10 @@
 import tkinter as tk
 from typing import Dict, Any, Callable
 from .options_types import OptionsConfig
-from .config_validator import ConfigValidator
+from .options_validator import OptionsValidator
 
 class OptionsUI:
-    def __init__(self, master: tk.Tk, language: object, validator: ConfigValidator):
+    def __init__(self, master: tk.Tk, language: object, validator: OptionsValidator):
         self.master = master
         self.language = language
         self.validator = validator
