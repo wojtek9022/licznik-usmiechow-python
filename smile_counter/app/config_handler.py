@@ -155,5 +155,4 @@ class ConfigHandler:
         self.config.read(self.config_path)
         for key, value in updates.items():
             self.config.set('Settings', key, str(value))
-        with open(self.config_path, 'w') as configfile:
-            self.config.write(configfile)
+        self._save_config()

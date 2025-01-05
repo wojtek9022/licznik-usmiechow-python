@@ -17,56 +17,64 @@ class VideoHandler:
     Attributes:
         master (tk.Tk): Main application window
         language (object): Current language module with text strings
-        header (tk.Label): Application header label
-        subtitle (tk.Label): Application subtitle label
-        logo_label (tk.Label): Logo display label
-        button_frame (tk.Frame): Frame containing control buttons
-        language_frame (tk.Frame): Frame containing language selection
+        ui_handler (object): Handler for UI updates and menu management
+        video_capture_wrapper (VideoCaptureWrapper): Video capture handler
+        smile_detector (SmileDetector): Smile detection processor
+        running (bool): Video processing state flag
         video_frame (Optional[tk.Frame]): Frame for video display
         canvas (Optional[tk.Canvas]): Canvas for rendering video
-        video_capture (Optional[VideoCapture]): Video capture handler
-        smile_detector (SmileDetector): Smile detection processor
-        fps_calculator (FPSCalculator): FPS calculation utility
         smiles_detected (int): Counter for detected smiles
-        running (bool): Video processing state flag
     """
 
-    def __init__(self, master: tk.Tk, language: object, header: tk.Label, subtitle: tk.Label, logo_label: tk.Label, button_frame: tk.Frame, language_frame: tk.Frame) -> None:
+    def __init__(self, master: tk.Tk, language: object, ui_handler: object) -> None:
+        """
+        Initialize video handler.
+
+        Args:
+            master (tk.Tk): Main application window
+            language (object): Language module for text strings
+            ui_handler (object): Handler for UI updates
+        """
         self.master = master
         self.language = language
-        self.header = header
-        self.subtitle = subtitle
-        self.logo_label = logo_label
-        self.button_frame = button_frame
-        self.language_frame = language_frame
-        self.video_frame: Optional[tk.Frame] = None
-        self.canvas: Optional[tk.Canvas] = None
-        self.video_capture_wrapper: Optional[VideoCaptureWrapper] = None
-        self.smile_detector: SmileDetector = SmileDetector()
-        self.fps_calculator: FPSCalculator = FPSCalculator()
-        self.smiles_detected: int = 0
-        self.running: bool = False
+        self.ui_handler = ui_handler
+        self.video_capture_wrapper = VideoCaptureWrapper()
+        self.smile_detector = SmileDetector()
+        self.running = False
+        self.video_frame = None
+        self.canvas = None
+        self.smiles_detected = 0
+        self.master.bind('<Escape>', self._handle_escape)
+
+    def setup_video_canvas(self) -> None:
+        """Set up video display canvas."""
+        self.video_frame = tk.Frame(self.master)
+        self.video_frame.pack(fill=tk.BOTH, expand=True)
+        self.canvas = tk.Canvas(self.video_frame, bg='black')
+        self.canvas.pack(fill=tk.BOTH, expand=True)
 
     def start_video(self) -> None:
         """
-        Start video capture and smile detection.
-
-        Initializes video capture, hides main menu elements,
-        sets up video display frame and starts frame processing loop.
+        Start video capture and processing.
+        Initializes video canvas and starts frame processing loop.
         """
-        self._hide_main_menu()
-        self._setup_video_frame()
-        self.video_capture_wrapper = VideoCaptureWrapper()
+        self.ui_handler.hide_main_menu()  # Use UIHandler instead of direct manipulation
+        self._setup_video_frame()  # Renamed from setup_video_canvas
         self.running = True
         self.update_frame()
 
     def stop_video(self) -> None:
         """
-        Stop video capture and processing.
-
-        Releases video capture resources, stops frame processing,
-        and returns to main menu view.
+        Stop video capture and cleanup resources.
+        Releases video capture, destroys windows and restores main menu.
         """
+        self.running = False
+        if self.video_capture_wrapper:
+            self.video_capture_wrapper.release()
+        if self.video_frame:
+            self.video_frame.destroy()
+        cv2.destroyAllWindows()
+        self.ui_handler.show_main_menu()
 
     def _hide_main_menu(self) -> None:
         self.header.pack_forget()
@@ -83,18 +91,19 @@ class VideoHandler:
 
     def update_frame(self) -> None:
         """
-        Process and display the next video frame.
-
-        Captures frame from camera, processes it for smile detection,
-        updates smile counter and FPS display, and schedules next frame update.
+        Process and display video frames.
+        Handles frame capture, smile detection and UI updates.
         """
-        if self.running:
-            ret, frame = self.video_capture_wrapper.read()
-            if ret:
-                self._process_frame(frame)
-                self.canvas.after(10, self.update_frame)
+        if not self.running:
+            return
+        
+        check, frame = self.video_capture_wrapper.read()
+        if check:
+            self._process_frame(frame)
+            self.master.after(10, self.update_frame)
 
     def _process_frame(self, frame: cv2.Mat) -> None:
+        """Process frame and check for ESC key."""
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = self.smile_detector.detect_faces(gray_frame)
 
@@ -109,6 +118,12 @@ class VideoHandler:
             self.smiles_detected = self.smile_detector.smiles_detected
 
         self._display_frame(frame)
+
+    def _handle_escape(self, event) -> None:
+        """Handle ESC key press."""
+        if self.running:
+            self.stop_video()
+            self.ui_handler.show_main_menu()
 
     def _display_frame(self, frame: cv2.Mat) -> None:
         frame = cv2.resize(frame, (self.canvas.winfo_width(), self.canvas.winfo_height()))

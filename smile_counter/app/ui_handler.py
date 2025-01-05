@@ -1,6 +1,7 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 import os
+from typing import Callable
 from .src.lang import lang_pl, lang_en
 from app.config_handler import ConfigHandler
 
@@ -30,6 +31,11 @@ class UIHandler:
         self.language = self._load_language()
         self.button_handler = button_handler
         self.options = options
+        self.header = None
+        self.subtitle = None
+        self.logo_label = None
+        self.button_frame = None
+        self.language_frame = None
         self._setup_main_window()
         self._load_images()
 
@@ -37,9 +43,11 @@ class UIHandler:
         """Load language based on config or default to English."""
         config = self.config_handler.get_config()
         try:
-            language = config.get('LANGUAGE', fallback='en')
+            # Access LANGUAGE as attribute instead of using get()
+            language = getattr(config, 'LANGUAGE', 'en')
             return lang_pl if language == 'pl' else lang_en
-        except Exception:
+        except Exception as e:
+            print(f"Error loading language: {e}. Defaulting to English.")
             return lang_en
 
     def change_language(self, lang_code: str) -> None:
@@ -140,29 +148,33 @@ class UIHandler:
         self.button_handler.update_buttons(self.language)
         self.options.update_language(self.language)  # Use direct update method
 
-    def create_main_menu(self) -> None:
-        """
-        Create and display the main menu interface.
-
-        Sets up complete main menu layout including header elements,
-        logo image, control buttons, and language selection options.
-        """
+    def create_main_menu(self, start_video_callback: Callable, show_options_callback: Callable, exit_callback: Callable) -> None:
+        """Create and display the main menu interface."""
+        self.header, self.subtitle, self.logo_label = self.create_header()
+        self.button_frame = self.button_handler.create_buttons(
+            start_video_callback,
+            show_options_callback,
+            exit_callback
+        )
+        self.language_frame = self.create_language_buttons(self.change_language)
 
     def hide_main_menu(self) -> None:
-        """
-        Hide all main menu elements.
-
-        Temporarily removes main menu components from view when
-        switching to video capture mode.
-        """
+        """Hide all main menu components."""
+        if self.header: self.header.pack_forget()
+        if self.subtitle: self.subtitle.pack_forget()
+        if self.logo_label: self.logo_label.pack_forget()
+        if hasattr(self.button_handler, 'button_frame'):
+            self.button_handler.button_frame.pack_forget()
+        if self.language_frame: self.language_frame.pack_forget()
 
     def show_main_menu(self) -> None:
-        """
-        Restore main menu visibility.
-
-        Makes all main menu components visible again when
-        returning from video capture mode.
-        """
+        """Restore main menu components."""
+        if self.header: self.header.pack(pady=20)
+        if self.subtitle: self.subtitle.pack(pady=5)
+        if self.logo_label: self.logo_label.pack(pady=10)
+        if hasattr(self.button_handler, 'button_frame'):
+            self.button_handler.button_frame.pack(pady=20)
+        if self.language_frame: self.language_frame.pack(pady=10)
 
     def update_language(self, language: object) -> None:
         """
