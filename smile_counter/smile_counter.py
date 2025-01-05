@@ -37,7 +37,7 @@ class SmileCounter:
             faces = self.smile_detector.detect_faces(gray_frame)
 
             for (face_x, face_y, face_w, face_h) in faces:
-                self.smile_detector.draw_rectangles(frame, [(face_x, face_y, face_w, face_h)], (0, 0, 255))  # Draw red rectangle around face
+                self.smile_detector.draw_face_rectangles(frame, [(face_x, face_y, face_w, face_h)], (0, 0, 255))  # Draw red rectangle around face
                 face_region = gray_frame[face_y + face_h // 2:face_y + face_h, face_x:face_x + face_w]  # Lower half of the face
                 smiles = self.smile_detector.detect_smiles(face_region)
                 smiles = [(x, y + face_h // 2, w, h) for (x, y, w, h) in smiles]

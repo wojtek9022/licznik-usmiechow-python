@@ -20,6 +20,16 @@ class ConfigHandler:
 
     _instance = None
     
+    OPTION_TYPES = {
+        'FACE_SCALE_FACTOR': float,
+        'FACE_MIN_NEIGHBOURS': int,
+        'SMILE_SCALE_FACTOR': float,
+        'SMILE_MIN_NEIGHBOURS': int,
+        'TIME_TO_START_COUNTING': float,
+        'COUNTED_SMILE_COOLDOWN_TIME': float,
+        'DEBUG_MODE': bool
+    }
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(ConfigHandler, cls).__new__(cls)
@@ -100,6 +110,10 @@ class ConfigHandler:
         with open(self.config_path, 'w') as configfile:
             self.config.write(configfile)
 
+    def _parse_bool_value(self, value: str) -> bool:
+        """Parse string to boolean value."""
+        return str(value).lower().strip() in ('true', '1', 'yes', 'on')
+
     def get_config(self) -> Any:
         """
         Retrieve current configuration values.
@@ -120,6 +134,8 @@ class ConfigHandler:
                 # Handle None values and missing semicolons
                 if v is None:
                     settings[k] = ""
+                elif self.OPTION_TYPES.get(k) == bool:
+                    settings[k] = self._parse_bool_value(v)
                 elif ';' in v:
                     settings[k] = v.split(';')[0].strip()
                 else:
