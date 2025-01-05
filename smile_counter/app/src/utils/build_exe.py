@@ -2,6 +2,31 @@ import os
 import subprocess
 from pathlib import Path
 
+def cleanup_build_files(output_dir: Path, app_name: str) -> None:
+    """Remove all build files except .exe."""
+    try:
+        # Remove build directory
+        if (output_dir / 'build').exists():
+            import shutil
+            shutil.rmtree(output_dir / 'build')
+        
+        # Remove spec file
+        spec_file = output_dir / f"{app_name}.spec"
+        if spec_file.exists():
+            spec_file.unlink()
+            
+        # Remove any .log files
+        for log_file in output_dir.glob('*.log'):
+            log_file.unlink()
+            
+        # Remove any .manifest files
+        for manifest in output_dir.glob('*.manifest'):
+            manifest.unlink()
+            
+        print("Cleanup completed successfully!")
+    except Exception as e:
+        print(f"Error during cleanup: {e}")
+
 def build_exe():
     # Get project root directory
     project_root = Path(__file__).parents[4]
@@ -17,7 +42,7 @@ def build_exe():
     output_dir.mkdir(exist_ok=True)
     
     # Version info
-    VERSION = "2.2.1"
+    VERSION = "2.2.2"
     FILE_VERSION = VERSION.replace('.', ',')
     
     # Create version info
@@ -60,7 +85,6 @@ VSVersionInfo(
         "--noconfirm",
         "--onefile",
         "--windowed",
-        "--uac-admin",  # Request admin privileges
         f"--icon={icon_path}",
         f"--version-file={version_file}",
         f"--add-data={app_path};app/",
@@ -81,8 +105,8 @@ VSVersionInfo(
     try:
         subprocess.run(command, check=True)
         print(f"Build completed successfully! Version: {VERSION}")
-        print(f"Output location: {output_dir}")
         version_file.unlink()  # Clean up version file
+        cleanup_build_files(output_dir, APP_NAME)  # Clean up build files
     except subprocess.CalledProcessError as e:
         print(f"Build failed with error: {e}")
         if version_file.exists():

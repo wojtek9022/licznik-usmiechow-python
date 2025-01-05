@@ -28,6 +28,7 @@ class OptionsUI:
         self.entries: Dict[str, tk.Entry] = {}
         self.labels: Dict[str, tk.Label] = {}
         self.error_labels: Dict[str, tk.Label] = {}
+        self.vars: Dict[str, tk.BooleanVar] = {}  # Store BooleanVar objects
 
     def on_language_change(self, language: object) -> None:
         """Handle language change event."""
@@ -74,9 +75,21 @@ class OptionsUI:
         label = tk.Label(self.window, text=label_text)
         label.grid(row=row, column=0, padx=10, pady=5)
         
-        entry = tk.Entry(self.window)
+        if option_name == 'DEBUG_MODE':
+            var = tk.BooleanVar(value=value)  # Convert to bool
+            self.vars[option_name] = var  # Store var reference
+            entry = tk.Checkbutton(
+                self.window,
+                variable=var,
+                onvalue=True,
+                offvalue=False
+            )
+        else:
+            entry = tk.Entry(self.window)
+            entry.insert(0, str(value))
+            
         entry.grid(row=row, column=1, padx=10, pady=5)
-        entry.insert(0, str(value))
+        self.entries[option_name] = entry
         
         error_label = tk.Label(self.window, text="", fg="red")
         error_label.grid(row=row, column=2, padx=10, pady=5)
@@ -95,6 +108,7 @@ class OptionsUI:
         self.save_button.grid(row=len(self.entries), columnspan=2, padx=10, pady=10)
 
     def _validate_entry(self, option_name: str) -> bool:
+        """Validate a single entry field."""
         value = self.entries[option_name].get()
         is_valid, error = self.validator.validate_option(option_name, value)
         
@@ -106,3 +120,9 @@ class OptionsUI:
             self.entries[option_name].config(bg='white')
             self.error_labels[option_name].config(text="")
             return True
+
+    def get_value(self, option_name: str) -> Any:
+        """Get entry value with proper type conversion."""
+        if option_name == 'DEBUG_MODE':
+            return self.vars[option_name].get()
+        return self.entries[option_name].get()

@@ -64,32 +64,43 @@ class OptionsValidator:
                 min_value=0.01,
                 max_value=10.0,
                 type=float,
-                error_message="Time must be between 0.1 and 10.0 seconds"
+                error_message="Time must be between 0.01 and 10.0 seconds"
+            ),
+            'DEBUG_MODE': ValidationRule(
+                min_value=0,
+                max_value=1,
+                type=bool,
+                error_message="Debug mode must be True or False"
             )
         }
 
+    def validate_value(self, value: Any, option_type: type) -> bool:
+        """Validate a value against its expected type."""
+        if option_type == bool:
+            return isinstance(value, bool)
+        try:
+            option_type(value)
+            return True
+        except (ValueError, TypeError):
+            return False
+
     def validate_option(self, option_name: str, value: Any) -> Tuple[bool, str]:
-        """
-        Validate a single configuration option.
-
-        Args:
-            option_name (str): Name of the option to validate
-            value (Any): Value to validate
-
-        Returns:
-            Tuple[bool, str]: Validation result (True if valid) and error message
-        """
+        """Validate a specific option value against its rules."""
         if option_name not in self.validation_rules:
             return True, ""
             
         rule = self.validation_rules[option_name]
+        
+        if rule.type == bool:
+            return True, ""
+            
         try:
-            numeric_value = float(value)
+            numeric_value = rule.type(value)
             if numeric_value < rule.min_value or numeric_value > rule.max_value:
                 return False, rule.error_message
             return True, ""
         except ValueError:
-            return False, f"Invalid value for {option_name}: must be a number"
+            return False, f"Invalid value for {option_name}"
 
     def validate_config(self, config: Dict[str, Any]) -> Tuple[bool, Dict[str, str]]:
         """

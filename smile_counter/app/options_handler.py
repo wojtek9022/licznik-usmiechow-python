@@ -28,13 +28,14 @@ class OptionsHandler:
         'FACE_MIN_NEIGHBOURS': {'type': int, 'row': 1},
         'SMILE_SCALE_FACTOR': {'type': float, 'row': 2},
         'SMILE_MIN_NEIGHBOURS': {'type': int, 'row': 3},
-        'TIME_TO_START_COUNTING': {'type': float, 'row': 4}
+        'TIME_TO_START_COUNTING': {'type': float, 'row': 4},
+        'DEBUG_MODE': {'type': bool, 'row': 5}  # Ensure DEBUG_MODE is in config
     }
 
     def __init__(self, master: tk.Tk, language: object) -> None:
         self.master = master
         self.config_handler = ConfigHandler()
-        self.language = language  # Get language from UIHandler
+        self.language = language
         self.validator = OptionsValidator()
         self.ui = OptionsUI(master, self.language, self.validator)
         self.values: Dict[str, Any] = {}
@@ -50,44 +51,57 @@ class OptionsHandler:
         self.language = language
         self.ui.on_language_change(self.language)
 
-    def load_config(self) -> None:
-        """
-        Load configuration values from storage.
+    def _parse_bool_value(self, value: str) -> bool:
+        """Convert string value to boolean."""
+        return str(value).lower() in ('true', '1', 'yes', 'on')
 
-        Reads configuration from file and validates against default values.
-        Missing options are replaced with defaults.
+    def _parse_value(self, value: Any, value_type: type) -> Any:
         """
+        Parse value based on type.
+        
+        Args:
+            value: Value to parse
+            value_type: Type to convert to
+        
+        Returns:
+            Parsed value of specified type
+        """
+        if value_type == bool:
+            return self._parse_bool_value(value)
+        return value
+
+    def load_config(self) -> None:
+        """Load configuration values from storage."""
         config = self.config_handler.get_config()
         for option_name, options in self.DEFAULT_CONFIG.items():
-            self.values[option_name] = options['type'](getattr(config, option_name))
+            value = getattr(config, option_name)
+            self.values[option_name] = self._parse_value(value, options['type'])
 
     def save_options(self) -> None:
-        """
-        Save current options to configuration file.
-
-        Validates all inputs before saving. Shows success/error message
-        to user based on validation result.
-        """
+        """Save updated options to config."""
         try:
-            # Validate all entries
             all_valid = True
-            for option_name in self.ui.entries:
-                if not self.ui._validate_entry(option_name):
-                    all_valid = False
+            updated_values = {}
             
-            if not all_valid:
-                return
+            for option_name, options in self.DEFAULT_CONFIG.items():
+                value = self.ui.get_value(option_name)
                 
-            updates = {
-                option_name: self.DEFAULT_CONFIG[option_name]['type'](entry.get())
-                for option_name, entry in self.ui.entries.items()
-            }
+                if options['type'] == bool:
+                    updated_values[option_name] = bool(value)
+                else:
+                    if not self.validator.validate_value(value, options['type']):
+                        all_valid = False
+                        break
+                    updated_values[option_name] = options['type'](value)
             
-            self.config_handler.update_config(updates)
-            self.load_config()
-            messagebox.showinfo("Success", self.language.SUCCESS_MESSAGE_TEXT)
+            if all_valid:
+                self.config_handler.update_config(updated_values)
+                print("Reloading config in options")
+                self.load_config() # Reload config to update values in options window
+                messagebox.showinfo("Success", self.language.OPTIONS_SAVED_TEXT)
+                self.ui.window.destroy()
         except Exception as e:
-            messagebox.showerror("Error", self.language.ERROR_MESSAGE_TEXT.format(error=e))
+            messagebox.showerror("Error", str(e))
 
     def show_options(self) -> None:
         """
