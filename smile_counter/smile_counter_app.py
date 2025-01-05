@@ -47,11 +47,9 @@ class SmileCounterApp:
         Args:
             lang_code (str): Language code to switch to ('en' or 'pl')
         """
-        # FIXME: Too many dependecies
         self.options.change_language(lang_code)
         self.language = self.options.language
-        self.ui_handler.language = self.language
-        self.ui_handler._refresh_ui()
+        self.ui_handler.update_language(language=self.language)
 
     def _init_ui(self) -> None:
         self.header, self.subtitle, self.logo_label = self.ui_handler.create_header()

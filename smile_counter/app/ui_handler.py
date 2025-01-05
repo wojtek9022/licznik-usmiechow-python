@@ -143,3 +143,5 @@ class UIHandler:
         Args:
             language (object): Language module containing text strings
         """
+        self.language = language
+        self._refresh_ui()
