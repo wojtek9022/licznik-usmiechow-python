@@ -1,21 +1,25 @@
 import tkinter as tk
 from tkinter import messagebox
 from typing import Dict, Any, Tuple
-from app.config_manager import ConfigManager
+from configparser import ConfigParser
+import os
+from pathlib import Path
+from app.config_handler import ConfigHandler
+
 
 class Options:
     def __init__(self, master: tk.Tk, language: object, language_manager: object) -> None:
         self.master = master
         self.language = language
         self.language_manager = language_manager
-        self.config_manager = ConfigManager()
+        self.config_handler = ConfigHandler()
         
         self.config_options = {
             'FACE_SCALE_FACTOR': {'type': float, 'row': 0},
             'FACE_MIN_NEIGHBOURS': {'type': int, 'row': 1},
             'SMILE_SCALE_FACTOR': {'type': float, 'row': 2},
             'SMILE_MIN_NEIGHBOURS': {'type': int, 'row': 3},
-            'TIME_TO_START_COUNTING': {'type': float, 'row': 4},
+            'TIME_TO_START_COUNTING': {'type': float, 'row': 4}
         }
         
         self.values: Dict[str, Any] = {}
@@ -28,12 +32,25 @@ class Options:
 
     def load_config(self) -> None:
         """Load configuration values from config file"""
-        config = self.config_manager.get_config()
-        
+        config = self.config_handler.get_config()
         for option_name in self.config_options:
-            self.values[option_name] = getattr(config, option_name)
-            
+            self.values[option_name] = self.config_options[option_name]['type'](
+                getattr(config, option_name)
+            )
         self._update_entries()
+
+    def save_options(self) -> None:
+        """Save configuration values to config file"""
+        try:
+            updates = {
+                option_name: self.config_options[option_name]['type'](entry.get())
+                for option_name, entry in self.entries.items()
+            }
+            self.config_handler.update_config(updates)
+            self.load_config()
+            messagebox.showinfo("Success", self.language.SUCCESS_MESSAGE_TEXT)
+        except Exception as e:
+            messagebox.showerror("Error", self.language.ERROR_MESSAGE_TEXT.format(error=e))
 
     def _update_entries(self) -> None:
         """Update UI entries with current values if they exist"""
@@ -69,6 +86,8 @@ class Options:
                 self.values[option_name],
                 options['row']
             )
+            # Store reference with exact name
+            setattr(self, f'{option_name.lower()}_label', label)
             self.labels[option_name] = label
             self.entries[option_name] = entry
 
@@ -88,26 +107,10 @@ class Options:
         )
         save_button.grid(row=5, columnspan=2, padx=10, pady=10)
 
-    def save_options(self) -> None:
-        try:
-            updates = {
-                option_name: self.config_options[option_name]['type'](entry.get())
-                for option_name, entry in self.entries.items()
-            }
-            
-            self.config_manager.update_config(updates)
-            self.load_config()
-            messagebox.showinfo("Success", self.language.SUCCESS_MESSAGE_TEXT)
-            
-        except Exception as e:
-            messagebox.showerror("Error", self.language.ERROR_MESSAGE_TEXT.format(error=e))
-
     def update_options_text(self, language: object) -> None:
         if self.options_window is not None and tk.Toplevel.winfo_exists(self.options_window):
             self.language = language
-            self.face_scale_label.config(text=language.FACE_SCALE_FACTOR_TEXT)
-            self.face_min_neighbours_label.config(text=language.FACE_MIN_NEIGHBOURS_TEXT)
-            self.smile_scale_label.config(text=language.SMILE_SCALE_FACTOR_TEXT)
-            self.smile_min_neighbours_label.config(text=language.SMILE_MIN_NEIGHBOURS_TEXT)
-            self.time_to_start_label.config(text=language.TIME_TO_START_COUNTING_TEXT)
+            # Update labels using stored references in self.labels
+            for option_name, label in self.labels.items():
+                label.config(text=getattr(language, f'{option_name}_TEXT'))
             self.options_window.title(language.OPTIONS_TITLE_TEXT)

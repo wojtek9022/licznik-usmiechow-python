@@ -3,6 +3,7 @@ import cv2
 from .cascade_loader import CascadeLoader
 from .config import FACE_SCALE_FACTOR, FACE_MIN_NEIGHBOURS, SMILE_SCALE_FACTOR, SMILE_MIN_NEIGHBOURS, TIME_TO_START_COUNTING
 
+
 class SmileDetector:
     def __init__(self):
         # NOTE: Pay attention to the return in load_cascades, 
