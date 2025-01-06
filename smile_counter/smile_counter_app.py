@@ -35,10 +35,10 @@ class SmileCounterApp:
         self.button_handler = ButtonHandler(self.master, None)  # Initially no language
         self.options = OptionsHandler(self.master, None)  # Initially no language
         self.ui_handler = UIHandler(self.master, self.button_handler, self.options)
-        self.language = self.ui_handler.language  # Get language from UIHandler
-        self.button_handler.language = self.language  # Update ButtonHandler with language
-        self.options.update_language(self.language)  # Update OptionsHandler with language
-        self.video_handler = None  # Initialize as None
+        self.language = self.ui_handler.language
+        self.button_handler.language = self.language
+        self.options.update_language(self.language)
+        self.video_handler = None
         self._init_ui()
 
     def change_language(self, lang_code: str) -> None:
