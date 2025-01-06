@@ -88,9 +88,35 @@ class OptionsUI:
         self.save_button.pack(pady=10)
 
     def _create_entry(self, label_text: str, value: Any, row: int, option_name: str, parent: tk.Frame) -> tuple:
-        # FIXME: Refactor this method to use a factory pattern
-        label = tk.Label(parent, text=label_text)
-        label.grid(row=row, column=0, padx=10, pady=5)
+        # Create tooltip text variable name
+        tooltip_text = getattr(self.language, f"{option_name}_TOOLTIP", "")
+        
+        # Create frame to hold label and add tooltip
+        label_frame = tk.Frame(parent)
+        label_frame.grid(row=row, column=0, padx=10, pady=5, sticky='w')
+        
+        label = tk.Label(label_frame, text=label_text)
+        label.pack(side=tk.LEFT)
+        
+        # Create and bind tooltip
+        if tooltip_text:
+            # Create tooltip on hover
+            def show_tooltip(event):
+                tooltip = tk.Toplevel()
+                tooltip.wm_overrideredirect(True)
+                tooltip.geometry(f"+{event.x_root+10}+{event.y_root+10}")
+                
+                tip_label = tk.Label(tooltip, text=tooltip_text, justify=tk.LEFT,
+                                    background="#ffffe0", relief=tk.SOLID, borderwidth=1)
+                tip_label.pack()
+                
+                def hide_tooltip(event):
+                    tooltip.destroy()
+                
+                label.bind('<Leave>', hide_tooltip)
+                tooltip.bind('<Leave>', hide_tooltip)
+                
+            label.bind('<Enter>', show_tooltip)
 
         if option_name == 'CAMERA_SOURCE':
             cameras = get_available_cameras()
