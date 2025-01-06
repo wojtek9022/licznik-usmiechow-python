@@ -38,8 +38,13 @@ class ExpressionHandler:
             smiles = self.smile_detector.detect(face_region)
             
             if len(smiles) > 0:
+                # Keep all 4 coordinates (x,y,w,h) when adjusting smiles
                 adjusted_smiles = [(x, y + face_h // 2, w, h) for (x, y, w, h) in smiles]
-                self.smile_detector.draw_detection(frame, adjusted_smiles)
+                self.smile_detector.draw_detection(
+                    frame, 
+                    adjusted_smiles, 
+                    face_coords=(face_x, face_y)
+                )
                 self.smile_detector.handle_smile(True)
             else:
                 self.smile_detector.handle_smile(False)

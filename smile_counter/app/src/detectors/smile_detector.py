@@ -23,10 +23,25 @@ class SmileDetector(ExpressionDetector):
             minNeighbors=int(self.config.SMILE_MIN_NEIGHBOURS)
         )
         
-    def draw_detection(self, frame, detections, color=(0, 255, 0)):
+    def draw_detection(self, frame, detections, face_coords=None, color=(0, 255, 0)):
+        """
+        Draw rectangles around detected smiles.
+        
+        Args:
+            frame: Video frame to draw on
+            detections: List of smile coordinates (x,y,w,h)
+            face_coords: Tuple of face coordinates (x,y) or None
+            color: RGB color tuple for rectangles
+        """
         if self.config.DEBUG_MODE:
-            for (x, y, w, h) in detections:
-                cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+            if face_coords:
+                face_x, face_y = face_coords
+                # Adjust smile coordinates relative to face
+                adjusted_detections = [(x + face_x, y + face_y, w, h) 
+                                     for (x, y, w, h) in detections]
+                ExpressionDetector.draw_rectangles(frame, adjusted_detections, color)
+            else:
+                ExpressionDetector.draw_rectangles(frame=frame, coordinates=detections, color=color)
                 
     def handle_smile(self, smile_detected: bool) -> bool:
         current_time = time.time()
