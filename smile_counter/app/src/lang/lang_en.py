@@ -1,5 +1,5 @@
 TITLE_TEXT = "Smile Counter"
-VERSION_TEXT = "Version: 2.3.1"
+VERSION_TEXT = "Version: 2.3.2"
 START_BUTTON_TEXT = "Start"
 OPTIONS_BUTTON_TEXT = "Options"
 EXIT_BUTTON_TEXT = "Exit"

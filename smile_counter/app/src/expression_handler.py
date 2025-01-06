@@ -8,6 +8,7 @@ class ExpressionHandler:
         self.face_detector = face_detector
         self.smile_detector = smile_detector
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        self.continuous_smile_start = 0  # Track when smile started
         
     def convert_to_gray(self, frame) -> cv2.Mat:
         return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -29,10 +30,13 @@ class ExpressionHandler:
         return len(detections) > 0, detections
 
     def process_frame(self, frame) -> cv2.Mat:
+        # FIXME: Refactor this method for better genericity
+        # It is only being used for smile detection
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = self.face_detector.detect(gray_frame)
         self.face_detector.draw_detection(frame, faces)
         
+        smile_detected = False
         for (face_x, face_y, face_w, face_h) in faces:
             face_region = gray_frame[face_y + face_h // 2:face_y + face_h, face_x:face_x + face_w]
             smiles = self.smile_detector.detect(face_region)
@@ -45,8 +49,19 @@ class ExpressionHandler:
                     adjusted_smiles, 
                     face_coords=(face_x, face_y)
                 )
-                self.smile_detector.handle_smile(True)
-            else:
-                self.smile_detector.handle_smile(False)
+                smile_detected = True
+                
+                # Start counting time when smile first detected
+                if self.continuous_smile_start == 0:
+                    self.continuous_smile_start = time.time()
+                    
+                # Check if smile has been held long enough
+                elif time.time() - self.continuous_smile_start >= float(self.config.TIME_TO_START_COUNTING):
+                    self.smile_detector.handle_smile(True)
+                    self.continuous_smile_start = 0  # Reset timer after counting
+            
+        if not smile_detected:
+            self.continuous_smile_start = 0  # Reset timer when smile breaks
+            self.smile_detector.handle_smile(False)
                 
         return frame

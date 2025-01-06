@@ -44,43 +44,58 @@ class OptionsUI:
                 self.save_button.config(text=language.SAVE_BUTTON_TEXT)
 
     def create_window(self, config_options: OptionsConfig, 
-                     values: Dict[str, Any], 
-                     save_callback: Callable) -> None:
-        """
-        Create and display the options configuration window.
-
-        Creates a new window or destroys existing one if present.
-        Sets up input fields for all configuration options and
-        adds a save button with the provided callback.
-
-        Args:
-            config_options (OptionsConfig): Configuration options schema
-            values (Dict[str, Any]): Current option values
-            save_callback (Callable): Function to call when saving
-        """
+                    values: Dict[str, Any], 
+                    save_callback: Callable) -> None:
+        """Create and display the options configuration window."""
         if self.window and tk.Toplevel.winfo_exists(self.window):
             self.window.destroy()
             
         self.window = tk.Toplevel(self.master)
         self.window.title(self.language.OPTIONS_TITLE_TEXT)
-        self._create_entries(config_options, values)
-        self._create_save_button(save_callback)
+        
+        # Create main frame for entries
+        main_frame = tk.Frame(self.window)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Configure grid weights in main frame
+        main_frame.grid_columnconfigure(1, weight=1)
+        
+        # Create entries in main frame instead of window
+        self._create_entries(config_options, values, main_frame)
+        
+        # Create bottom frame for save button
+        button_frame = tk.Frame(self.window)
+        button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
+        
+        # Create save button in bottom frame
+        self._create_save_button(save_callback, button_frame)
 
-    def _create_entries(self, config_options: OptionsConfig, values: Dict[str, Any]) -> None:
+    def _create_entries(self, config_options: OptionsConfig, values: Dict[str, Any], parent: tk.Frame) -> None:
+        """Create entry fields for each configuration option."""
         for option_name, options in config_options.items():
             label_text = getattr(self.language, f'{option_name}_TEXT')
-            label, entry = self._create_entry(label_text, values[option_name], options['row'], option_name)
+            label, entry = self._create_entry(label_text, values[option_name], options['row'], option_name, parent)
             self.labels[option_name] = label
             self.entries[option_name] = entry
 
-    def _create_entry(self, label_text: str, value: Any, row: int, option_name: str) -> tuple:
-        label = tk.Label(self.window, text=label_text)
+    def _create_save_button(self, save_callback: Callable, parent: tk.Frame) -> None:
+        self.save_button = tk.Button(
+            parent,
+            text=self.language.SAVE_BUTTON_TEXT,
+            command=save_callback,
+            width=20
+        )
+        self.save_button.pack(pady=10)
+
+    def _create_entry(self, label_text: str, value: Any, row: int, option_name: str, parent: tk.Frame) -> tuple:
+        # FIXME: Refactor this method to use a factory pattern
+        label = tk.Label(parent, text=label_text)
         label.grid(row=row, column=0, padx=10, pady=5)
 
         if option_name == 'CAMERA_SOURCE':
             cameras = get_available_cameras()
             
-            combo = ttk.Combobox(self.window, width=30, state="readonly")
+            combo = ttk.Combobox(parent, width=30, state="readonly")
             combo['values'] = [name for _, name in cameras]
             
             # Find current camera index
@@ -97,33 +112,25 @@ class OptionsUI:
             var = tk.BooleanVar(value=value)  # Convert to bool
             self.vars[option_name] = var  # Store var reference
             entry = tk.Checkbutton(
-                self.window,
+                parent,
                 variable=var,
                 onvalue=True,
                 offvalue=False
             )
         else:
-            entry = tk.Entry(self.window)
+            entry = tk.Entry(parent)
             entry.insert(0, str(value))
         
         entry.grid(row=row, column=1, padx=10, pady=5)
         self.entries[option_name] = entry
         
-        error_label = tk.Label(self.window, text="", fg="red")
+        error_label = tk.Label(parent, text="", fg="red")
         error_label.grid(row=row, column=2, padx=10, pady=5)
         self.error_labels[option_name] = error_label
         
         entry.bind('<FocusOut>', lambda e: self._validate_entry(option_name))
         
         return label, entry
-
-    def _create_save_button(self, save_callback: Callable) -> None:
-        self.save_button = tk.Button(
-            self.window,
-            text=self.language.SAVE_BUTTON_TEXT,
-            command=save_callback
-        )
-        self.save_button.grid(row=len(self.entries), columnspan=2, padx=10, pady=10)
 
     def _validate_entry(self, option_name: str) -> bool:
         try:
