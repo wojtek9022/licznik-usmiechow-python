@@ -86,13 +86,12 @@ class OptionsUI:
             # Find current camera index
             current_idx = 0
             for idx, (cam_idx, _) in enumerate(cameras):
-                if cam_idx == value:
+                if cam_idx == int(value):
                     current_idx = idx
             combo.current(current_idx)
             
             # Store mapping for retrieving camera index
             combo.camera_indices = {name: idx for idx, name in cameras}
-            
             entry = combo
         elif option_name == 'DEBUG_MODE':
             var = tk.BooleanVar(value=value)  # Convert to bool
