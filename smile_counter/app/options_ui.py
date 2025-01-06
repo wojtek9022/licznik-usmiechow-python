@@ -6,6 +6,7 @@ from .options_validator import OptionsValidator, ValidationError
 from app.src.utils.camera_utils import get_available_cameras
 
 class OptionsUI:
+    # FIXME Refactor this class, it's too long
     """
     Manages the options configuration window interface.
 
@@ -27,21 +28,39 @@ class OptionsUI:
         self.language = language
         self.validator = validator
         self.window: tk.Toplevel | None = None
+        # Store objects and references
         self.entries: Dict[str, tk.Entry] = {}
         self.labels: Dict[str, tk.Label] = {}
         self.error_labels: Dict[str, tk.Label] = {}
-        self.vars: Dict[str, tk.BooleanVar] = {}  # Store BooleanVar objects
+        self.vars: Dict[str, tk.BooleanVar] = {}
+        self.tooltips: Dict[str, tk.Label] = {}
+        self.tooltip_labels: Dict[str, tk.Label] = {}
+        self.tooltip_bindings = {}
 
     def on_language_change(self, language: object) -> None:
-        """Handle language change event."""
         self.language = language
         if self.window and tk.Toplevel.winfo_exists(self.window):
+            # Update window title and labels
             self.window.title(language.OPTIONS_TITLE_TEXT)
             for option_name, label in self.labels.items():
                 label_text = getattr(language, f"{option_name}_TEXT")
                 label.config(text=label_text)
             if hasattr(self, "save_button"):
                 self.save_button.config(text=language.SAVE_BUTTON_TEXT)
+            
+            # Clear all existing tooltips - they will be recreated with new text
+            for tooltip in self.tooltips.values():
+                if tooltip.winfo_exists():
+                    tooltip.destroy()
+            self.tooltips.clear()
+            self.tooltip_labels.clear()  # Clear tooltip labels dictionary
+
+            # Rebind tooltips with new language
+            for option_name, (label, old_func) in self.tooltip_bindings.items():
+                label.unbind('<Enter>')
+                new_func = self._create_tooltip_func(option_name)
+                label.bind('<Enter>', new_func)
+                self.tooltip_bindings[option_name] = (label, new_func)
 
     def create_window(self, config_options: OptionsConfig, 
                     values: Dict[str, Any], 
@@ -101,22 +120,9 @@ class OptionsUI:
         # Create and bind tooltip
         if tooltip_text:
             # Create tooltip on hover
-            def show_tooltip(event):
-                tooltip = tk.Toplevel()
-                tooltip.wm_overrideredirect(True)
-                tooltip.geometry(f"+{event.x_root+10}+{event.y_root+10}")
-                
-                tip_label = tk.Label(tooltip, text=tooltip_text, justify=tk.LEFT,
-                                    background="#ffffe0", relief=tk.SOLID, borderwidth=1)
-                tip_label.pack()
-                
-                def hide_tooltip(event):
-                    tooltip.destroy()
-                
-                label.bind('<Leave>', hide_tooltip)
-                tooltip.bind('<Leave>', hide_tooltip)
-                
-            label.bind('<Enter>', show_tooltip)
+            tooltip_func = self._create_tooltip_func(option_name)
+            label.bind('<Enter>', tooltip_func)
+            self.tooltip_bindings[option_name] = (label, tooltip_func)
 
         if option_name == 'CAMERA_SOURCE':
             cameras = get_available_cameras()
@@ -157,6 +163,30 @@ class OptionsUI:
         entry.bind('<FocusOut>', lambda e: self._validate_entry(option_name))
         
         return label, entry
+
+    def _create_tooltip_func(self, option_name: str) -> Callable:
+        def show_tooltip(event):
+            tooltip = tk.Toplevel()
+            tooltip.wm_overrideredirect(True)
+            tooltip.geometry(f"+{event.x_root+10}+{event.y_root+10}")
+            
+            current_tooltip_text = getattr(self.language, f"{option_name}_TOOLTIP", "")
+            tip_label = tk.Label(tooltip, text=current_tooltip_text, 
+                                justify=tk.LEFT, background="#ffffe0", 
+                                relief=tk.SOLID, borderwidth=1)
+            tip_label.pack()
+            
+            self.tooltips[option_name] = tooltip
+            
+            def hide_tooltip(event):
+                tooltip.destroy()
+                if option_name in self.tooltips:
+                    del self.tooltips[option_name]
+            
+            label = self.labels[option_name]
+            label.bind('<Leave>', hide_tooltip)
+            tooltip.bind('<Leave>', hide_tooltip)
+        return show_tooltip
 
     def _validate_entry(self, option_name: str) -> bool:
         try:
