@@ -1,4 +1,6 @@
 import cv2
+import numpy as np
+import logging
 from PIL import Image, ImageTk
 import tkinter as tk
 import time
@@ -7,6 +9,9 @@ from app.src.expression_handler import ExpressionHandler
 from app.src.detectors.smile_detector import SmileDetector
 from app.src.detectors.face_detector import FaceDetector
 from app.src.video_capture_wrapper import VideoCaptureWrapper
+
+# Suppress OpenCV warnings
+logging.getLogger("cv2").setLevel(logging.ERROR)
 
 class VideoHandler:
     """
@@ -18,8 +23,14 @@ class VideoHandler:
         self.master = master
         self.language = language
         self.ui_handler = ui_handler
-        self.video_capture_wrapper = VideoCaptureWrapper()
         self.config = ConfigHandler().get_config()
+        
+        # Initialize video capture with DirectShow backend
+        camera_source = int(self.config.CAMERA_SOURCE)
+        self.video_capture_wrapper = VideoCaptureWrapper(
+            source=camera_source,
+            api_preference=cv2.CAP_DSHOW
+        )
         
         # Initialize detectors
         self.face_detector = FaceDetector(self.config)

@@ -23,14 +23,15 @@ class OptionsHandler:
         ui (OptionsUI): Options window UI manager
         values (Dict[str, Any]): Current configuration values
     """
-    DEFAULT_CONFIG: OptionsConfig = {
-        'FACE_SCALE_FACTOR': {'type': float, 'row': 0},
-        'FACE_MIN_NEIGHBOURS': {'type': int, 'row': 1},
-        'SMILE_SCALE_FACTOR': {'type': float, 'row': 2},
-        'SMILE_MIN_NEIGHBOURS': {'type': int, 'row': 3},
-        'TIME_TO_START_COUNTING': {'type': float, 'row': 4},
-        'COUNTED_SMILE_COOLDOWN_TIME': {'type': float, 'row': 5},
-        'DEBUG_MODE': {'type': bool, 'row': 6}
+    DEFAULT_CONFIG = {
+        'FACE_SCALE_FACTOR': {'type': float, 'row': 1},
+        'FACE_MIN_NEIGHBOURS': {'type': int, 'row': 2},
+        'SMILE_SCALE_FACTOR': {'type': float, 'row': 3},
+        'SMILE_MIN_NEIGHBOURS': {'type': int, 'row': 4},
+        'TIME_TO_START_COUNTING': {'type': float, 'row': 5},
+        'COUNTED_SMILE_COOLDOWN_TIME': {'type': float, 'row': 6},
+        'CAMERA_SOURCE': {'type': int, 'row': 7},
+        'DEBUG_MODE': {'type': bool, 'row': 8},
     }
 
     def __init__(self, master: tk.Tk, language: object) -> None:

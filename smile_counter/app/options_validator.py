@@ -1,6 +1,10 @@
 from typing import Any, Dict, Union, Tuple
 from dataclasses import dataclass
 
+class ValidationError(Exception):
+    """Custom exception for validation errors."""
+    pass
+
 @dataclass
 class ValidationRule:
     """
@@ -35,6 +39,8 @@ class OptionsValidator:
     """
 
     def __init__(self):
+        # FIXME: Refactor this class and import numbers from config 
+        # instead of using magic numbers.
         self.validation_rules = {
             'FACE_SCALE_FACTOR': ValidationRule(
                 min_value=1.01,
@@ -71,6 +77,12 @@ class OptionsValidator:
                 max_value=1,
                 type=bool,
                 error_message="Debug mode must be True or False"
+            ),
+            'CAMERA_SOURCE': ValidationRule(
+                min_value=0,
+                max_value=10,
+                type=int,
+                error_message="Invalid camera source"
             )
         }
 

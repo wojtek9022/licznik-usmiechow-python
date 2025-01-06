@@ -7,6 +7,7 @@ from app.button_handler import ButtonHandler
 from app.options_handler import OptionsHandler
 from app.video_handler import VideoHandler
 from app.ui_handler import UIHandler
+import cv2
 
 class SmileCounterApp:
     """

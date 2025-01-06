@@ -12,15 +12,20 @@ class VideoCaptureWrapper:
         capture (cv2.VideoCaptureWrapper): OpenCV video capture object
     """
 
-    def __init__(self, source: int = 0) -> None:
+    def __init__(self, source: int = 0, api_preference: int = None) -> None:
         """
         Initialize video capture from specified source.
 
         Args:
             source (int, optional): Camera index or video file path. 
                                   Defaults to 0 (first available camera).
+            api_preference (int, optional): Preferred capture API backend.
+                                          Defaults to None.
         """
-        self.capture = cv2.VideoCapture(source)
+        if api_preference is not None:
+            self.capture = cv2.VideoCapture(source, api_preference)
+        else:
+            self.capture = cv2.VideoCapture(source)
 
     def read(self) -> Tuple[bool, Any]:
         """

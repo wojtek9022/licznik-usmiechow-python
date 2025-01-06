@@ -1,7 +1,9 @@
 import tkinter as tk
+import tkinter.ttk as ttk
 from typing import Dict, Any, Callable
 from .options_types import OptionsConfig
-from .options_validator import OptionsValidator
+from .options_validator import OptionsValidator, ValidationError
+from app.src.utils.camera_utils import get_available_cameras
 
 class OptionsUI:
     """
@@ -74,8 +76,25 @@ class OptionsUI:
     def _create_entry(self, label_text: str, value: Any, row: int, option_name: str) -> tuple:
         label = tk.Label(self.window, text=label_text)
         label.grid(row=row, column=0, padx=10, pady=5)
-        
-        if option_name == 'DEBUG_MODE':
+
+        if option_name == 'CAMERA_SOURCE':
+            cameras = get_available_cameras()
+            
+            combo = ttk.Combobox(self.window, width=30, state="readonly")
+            combo['values'] = [name for _, name in cameras]
+            
+            # Find current camera index
+            current_idx = 0
+            for idx, (cam_idx, _) in enumerate(cameras):
+                if cam_idx == value:
+                    current_idx = idx
+            combo.current(current_idx)
+            
+            # Store mapping for retrieving camera index
+            combo.camera_indices = {name: idx for idx, name in cameras}
+            
+            entry = combo
+        elif option_name == 'DEBUG_MODE':
             var = tk.BooleanVar(value=value)  # Convert to bool
             self.vars[option_name] = var  # Store var reference
             entry = tk.Checkbutton(
@@ -87,7 +106,7 @@ class OptionsUI:
         else:
             entry = tk.Entry(self.window)
             entry.insert(0, str(value))
-            
+        
         entry.grid(row=row, column=1, padx=10, pady=5)
         self.entries[option_name] = entry
         
@@ -108,21 +127,34 @@ class OptionsUI:
         self.save_button.grid(row=len(self.entries), columnspan=2, padx=10, pady=10)
 
     def _validate_entry(self, option_name: str) -> bool:
-        """Validate a single entry field."""
-        value = self.entries[option_name].get()
-        is_valid, error = self.validator.validate_option(option_name, value)
-        
-        if not is_valid:
-            self.entries[option_name].config(bg='pink')
-            self.error_labels[option_name].config(text=error)
-            return False
-        else:
-            self.entries[option_name].config(bg='white')
+        try:
+            value = self.get_value(option_name)
+            self.validator.validate_option(option_name, value)
             self.error_labels[option_name].config(text="")
+            
+            # Use ttk style for validation
+            if isinstance(self.entries[option_name], ttk.Combobox):
+                self.entries[option_name].state(['!invalid'])
+            else:
+                self.entries[option_name].config(bg='white')
+                
             return True
+            
+        except ValidationError as e:
+            self.error_labels[option_name].config(text=str(e))
+            
+            # Use ttk style for validation
+            if isinstance(self.entries[option_name], ttk.Combobox):
+                self.entries[option_name].state(['invalid'])
+            else:
+                self.entries[option_name].config(bg='pink')
+                
+            return False
 
     def get_value(self, option_name: str) -> Any:
-        """Get entry value with proper type conversion."""
-        if option_name == 'DEBUG_MODE':
-            return self.vars[option_name].get()
-        return self.entries[option_name].get()
+        entry = self.entries[option_name]
+        if option_name == 'CAMERA_SOURCE':
+            return entry.camera_indices[entry.get()]
+        elif option_name == 'DEBUG_MODE':
+            return bool(self.vars[option_name].get())
+        return entry.get()
