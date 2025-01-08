@@ -1,7 +1,7 @@
 from .base_detector import ExpressionDetector
 import cv2
 import time
-from app.src.detectors.cascade_loader import CascadeLoader
+from .cascade_loader import CascadeLoader
 import tkinter as tk
 
 class SmileDetector(ExpressionDetector):
