@@ -1,4 +1,4 @@
-from .base_detector import ExpressionDetector
+from .abstract_detectors.base_detector import ExpressionDetector
 import cv2
 import time
 from .cascade_loader import CascadeLoader
@@ -16,11 +16,17 @@ class SmileDetector(ExpressionDetector):
         self.show_counted_text = False
         self.counted_text_timestamp = 0
 
-    def detect(self, frame, region=None):
+    def detect(self, frame, scaleFactor=None, minNeighbors=None):
+        """Detect smiles in the given frame using config parameters"""
+        if scaleFactor is None:
+            scaleFactor = float(self.config.SMILE_SCALE_FACTOR)
+        if minNeighbors is None:
+            minNeighbors = int(self.config.SMILE_MIN_NEIGHBOURS)
+        
         return self.smile_cascade.detectMultiScale(
-            region if region is not None else frame,
-            scaleFactor=float(self.config.SMILE_SCALE_FACTOR),
-            minNeighbors=int(self.config.SMILE_MIN_NEIGHBOURS)
+            frame,
+            scaleFactor=scaleFactor,
+            minNeighbors=minNeighbors
         )
         
     def draw_detection(self, frame, detections, face_coords=None, color=(0, 255, 0)):

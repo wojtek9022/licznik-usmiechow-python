@@ -1,7 +1,7 @@
 import tkinter as tk
 from typing import Dict, Any
 from tkinter import messagebox
-from .config_handler import ConfigHandler
+from ..handlers.config_handler import ConfigHandler
 from .options_types import OptionsConfig
 from .options_validator import OptionsValidator
 from .options_ui import OptionsUI

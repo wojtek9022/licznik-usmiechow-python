@@ -93,10 +93,12 @@ VSVersionInfo(
         f"--specpath={output_dir}",  # Set spec file directory
         f"--name={APP_NAME}",  # Set executable name
         "--hidden-import=tkinter",
+        "--hidden-import=tkinter.ttk",
         "--hidden-import=PIL",
         "--hidden-import=cv2",
         "--hidden-import=PIL.Image",
         "--hidden-import=configparser",
+        "--hidden-import=win32com",
         "--disable-windowed-traceback",  # Reduce executable size
         "--noupx",  # Disable UPX compression
         str(main_script)

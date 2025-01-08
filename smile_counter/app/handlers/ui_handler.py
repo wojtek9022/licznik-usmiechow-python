@@ -2,10 +2,14 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import os
 from typing import Callable
-from .src.lang import lang_pl, lang_en
-from app.config_handler import ConfigHandler
+from app.src.lang import lang_pl, lang_en
+from .config_handler import ConfigHandler
+from .button_handler import ButtonHandler
+from .video_handler import VideoHandler
+from ..options.options_handler import OptionsHandler
 
 class UIHandler:
+    # FIXME: Refactor this class, Its too long
     """
     Manages user interface elements and layout.
 
@@ -25,19 +29,44 @@ class UIHandler:
         flag_pl_path (str): Path to Polish flag image
     """
 
-    def __init__(self, master: tk.Tk, button_handler: object, options: object) -> None:
+    def __init__(self, master: tk.Tk) -> None:
         self.master = master
         self.config_handler = ConfigHandler()
         self.language = self._load_language()
-        self.button_handler = button_handler
-        self.options = options
+        
+        # Initialize handlers - fix naming
+        self.button_handler = ButtonHandler(self.master, self.language)
+        self.options_handler = OptionsHandler(self.master, self.language)  # Changed from options to options_handler
+        self.video_handler = None
+        
+        # Setup UI components
         self.header = None
         self.subtitle = None
         self.logo_label = None
         self.button_frame = None
         self.language_frame = None
+        
         self._setup_main_window()
         self._load_images()
+
+    def start_video(self) -> None:
+        """Initialize and start video handling"""
+        if not self.video_handler:
+            self.video_handler = VideoHandler(
+                self.master,
+                self.language,
+                self
+            )
+        self.video_handler.start_video()
+
+    def cleanup(self) -> None:
+        """Clean up resources before closing"""
+        if self.video_handler:
+            self.video_handler.stop_video()
+
+    def show_options(self) -> None:
+        """Show options configuration window"""
+        self.options_handler.show_options()
 
     def _load_language(self) -> object:
         """Load language based on config or default to English."""
@@ -68,7 +97,7 @@ class UIHandler:
         self.subtitle.config(text=self.language.VERSION_TEXT)
         self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
         self.button_handler.update_buttons(self.language)
-        self.options.update_language(self.language)
+        self.options_handler.update_language(self.language)  # Changed from options to options_handler
 
     def _setup_main_window(self) -> None:
         self.master.title(self.language.TITLE_TEXT)
@@ -76,10 +105,15 @@ class UIHandler:
 
     def _load_images(self) -> None:
         current_dir: str = os.path.dirname(os.path.abspath(__file__))  # Get current script directory
-        self.logo_path: str = os.path.join(current_dir, 'img', 'main_menu_logo.png')
-        self.icon_path: str = os.path.join(current_dir, 'img', 'icon.ico')
-        self.flag_en_path: str = os.path.join(current_dir, 'img', 'flag_en.png')  # Placeholder for English flag
-        self.flag_pl_path: str = os.path.join(current_dir, 'img', 'flag_pl.png')  # Placeholder for Polish flag
+        # Get handlers directory
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # Get app directory
+        app_dir = os.path.dirname(current_dir)
+        # Build paths to images in src/img
+        self.icon_path = os.path.join(app_dir, 'src', 'img', 'icon.ico')
+        self.flag_en_path = os.path.join(app_dir, 'src', 'img', 'flag_en.png')
+        self.flag_pl_path = os.path.join(app_dir, 'src', 'img', 'flag_pl.png')
+        self.logo_path: str = os.path.join(app_dir, 'src', 'img', 'main_menu_logo.png')
         icon_image: Image.Image = Image.open(self.icon_path)
         icon_photo: ImageTk.PhotoImage = ImageTk.PhotoImage(icon_image)
         self.master.iconphoto(True, icon_photo)
@@ -199,16 +233,8 @@ class UIHandler:
 
     def _update_options_language(self, language: object) -> None:
         """Update options window text elements."""
-        window = self.options.ui.window
-        if window and tk.Toplevel.winfo_exists(window):
-            window.title(language.OPTIONS_TITLE_TEXT)
-            # Update labels
-            for option_name, label in self.options.ui.labels.items():
-                label_text = getattr(language, f'{option_name}_TEXT')
-                label.config(text=label_text)
-            # Update save button
-            if hasattr(self.options.ui, 'save_button'):
-                self.options.ui.save_button.config(text=language.SAVE_BUTTON_TEXT)
+        if self.options_handler.ui.window and tk.Toplevel.winfo_exists(self.options_handler.ui.window):
+            self.options_handler.update_language(language)
 
     def on_language_change(self, language: object) -> None:
         """

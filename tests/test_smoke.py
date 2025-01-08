@@ -22,22 +22,22 @@ class SmileDetectorSmokeTest(unittest.TestCase):
         )
         cls.logger = logging.getLogger(__name__)
         
-        # Initialize other class variables
+        # Initialize config and detector
         cls.config = ensure_app_initialized()
         cls.detector = SmileDetector(cls.config)
         
-        # Use absolute paths
+        # Define test paths
         cls.test_data_dir = Path(__file__).parent / 'data'
         cls.positive_dir = cls.test_data_dir / 'positive'
         cls.negative_dir = cls.test_data_dir / 'negative'
-
-        # Add statistics containers
+        
+        # Initialize statistics
         cls.subfolder_stats = {}
         cls.confusion_matrix = {
-            'true_positive': 0,  # Should detect & detected
-            'false_positive': 0, # Shouldn't detect but detected
-            'true_negative': 0,  # Shouldn't detect & didn't detect
-            'false_negative': 0  # Should detect but didn't detect
+            'true_positive': 0,
+            'false_positive': 0,
+            'true_negative': 0,
+            'false_negative': 0
         }
 
     @classmethod
@@ -76,6 +76,17 @@ class SmileDetectorSmokeTest(unittest.TestCase):
             cls.logger.info(f"Total images processed: {total}")
             cls.logger.info(f"Overall accuracy: {accuracy:.2f}%")
             cls.logger.info(f"Precision: {precision:.2f}%")
+        
+        # Add configuration information
+        cls.logger.info("\nTest Configuration:")
+        cls.logger.info("-"*30)
+        cls.logger.info(f"Face Scale Factor: {cls.config.FACE_SCALE_FACTOR}")
+        cls.logger.info(f"Face Min Neighbours: {cls.config.FACE_MIN_NEIGHBOURS}")
+        cls.logger.info(f"Smile Scale Factor: {cls.config.SMILE_SCALE_FACTOR}")
+        cls.logger.info(f"Smile Min Neighbours: {cls.config.SMILE_MIN_NEIGHBOURS}")
+        
+        # Add any other relevant configuration parameters
+        cls.logger.info("\n" + "="*50)
 
     def _process_image(self, img_path: Path) -> bool:
         """Process single image and return if smile was detected"""
@@ -85,12 +96,22 @@ class SmileDetectorSmokeTest(unittest.TestCase):
             return False
             
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = self.detector.face_cascade.detectMultiScale(gray, 1.1, 4)
+        
+        # Use config values for face detection
+        faces = self.detector.face_cascade.detectMultiScale(
+            gray,
+            scaleFactor=float(self.config.FACE_SCALE_FACTOR),
+            minNeighbors=int(self.config.FACE_MIN_NEIGHBOURS)
+        )
         
         for (x, y, w, h) in faces:
-            # Fix ROI calculation
             roi_gray = gray[y:y+h, x:x+w]
-            smiles = self.detector.detect(frame=roi_gray)
+            # Use config values for smile detection
+            smiles = self.detector.detect(
+                frame=roi_gray,
+                scaleFactor=float(self.config.SMILE_SCALE_FACTOR),
+                minNeighbors=int(self.config.SMILE_MIN_NEIGHBOURS)
+            )
             if len(smiles) > 0:
                 return True
         return False
@@ -119,6 +140,10 @@ class SmileDetectorSmokeTest(unittest.TestCase):
 
     def test_positive_samples(self):
         """Test detection on positive samples (should detect smiles)"""
+        self.logger.info("\n" + "="*50)
+        self.logger.info("TESTING POSITIVE SAMPLES (Should detect smiles)")
+        self.logger.info("="*50 + "\n")
+        
         total_success = 0
         total_count = 0
         
@@ -144,6 +169,10 @@ class SmileDetectorSmokeTest(unittest.TestCase):
 
     def test_negative_samples(self):
         """Test detection on negative samples (should not detect smiles)"""
+        self.logger.info("\n" + "="*50)
+        self.logger.info("TESTING NEGATIVE SAMPLES (Should NOT detect smiles)")
+        self.logger.info("="*50 + "\n")
+        
         total_success = 0
         total_count = 0
         

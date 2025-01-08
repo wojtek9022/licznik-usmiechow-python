@@ -45,8 +45,9 @@ class ConfigHandler:
             self.config.optionxform = str
             self.config_dir = os.path.join(str(Path.home()), '.smile_counter')
             self.config_path = os.path.join(self.config_dir, 'config.ini')
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            self.default_config_path = os.path.join(current_dir, 'src', 'utils', 'default_config.ini')
+            current_dir = os.path.dirname(os.path.abspath(__file__))  # Gets handlers directory
+            app_dir = os.path.dirname(current_dir)  # Gets app directory
+            self.default_config_path = os.path.join(app_dir, 'src', 'utils', 'default_config.ini')
             self._ensure_config_exists()
             self.initialized = True
             

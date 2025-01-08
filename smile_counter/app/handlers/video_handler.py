@@ -4,11 +4,11 @@ import logging
 from PIL import Image, ImageTk
 import tkinter as tk
 import time
-from app.config_handler import ConfigHandler
-from app.src.expression_handler import ExpressionHandler
-from app.src.detectors.smile_detector import SmileDetector
-from app.src.detectors.face_detector import FaceDetector
-from app.src.video_capture_wrapper import VideoCaptureWrapper
+from .config_handler import ConfigHandler
+from ..src.utils.video_utils.expression_handler import ExpressionHandler
+from ..src.detectors.smile_detector import SmileDetector
+from ..src.detectors.face_detector import FaceDetector
+from ..src.utils.video_utils.video_capture_wrapper import VideoCaptureWrapper
 
 # Suppress OpenCV warnings
 logging.getLogger("cv2").setLevel(logging.ERROR)

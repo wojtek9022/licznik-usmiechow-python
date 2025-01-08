@@ -6,7 +6,7 @@ and validation of required resources before the main application starts.
 """
 
 import os
-from .config_handler import ConfigHandler
+from .handlers.config_handler import ConfigHandler
 from typing import Any
 
 def ensure_app_initialized() -> Any:

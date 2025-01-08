@@ -1,4 +1,4 @@
-from .base_detector import ExpressionDetector
+from .abstract_detectors.base_detector import ExpressionDetector
 import cv2
 from app.src.detectors.cascade_loader import CascadeLoader
 
