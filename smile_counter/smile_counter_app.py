@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.messagebox  # Required for building an executable
-from initialize import get_initialized_config
+from app.handlers.initialize_handler import get_initialized_config
 get_initialized_config()  
 
 from app.handlers.ui_handler import UIHandler

@@ -28,13 +28,14 @@ def cleanup_build_files(output_dir: Path, app_name: str) -> None:
         print(f"Error during cleanup: {e}")
 
 def build_exe():
-    # Get project root directory
-    project_root = Path(__file__).parents[4]
+    # Get project root directory (5 levels up from scripts folder)
+    project_root = Path(__file__).parents[5]
     
     # Define paths and names
     APP_NAME = "Smile Counter 2"
-    output_dir = project_root / "smile_counter" / "output"
-    icon_path = project_root / "smile_counter" / "app" / "img" / "icon.ico"
+    # Update output path to be directly under project root
+    output_dir = project_root / "output"
+    icon_path = project_root / "smile_counter" / "app" / "src" / "data" / "img" / "menu" / "icon.ico"
     app_path = project_root / "smile_counter" / "app"
     main_script = project_root / "smile_counter" / "smile_counter_app.py"
     
@@ -42,7 +43,7 @@ def build_exe():
     output_dir.mkdir(exist_ok=True)
     
     # Version info
-    VERSION = "2.2.2"
+    VERSION = "3.0.0"
     FILE_VERSION = VERSION.replace('.', ',')
     
     # Create version info
