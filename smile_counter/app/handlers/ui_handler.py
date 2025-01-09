@@ -6,7 +6,7 @@ from app.src.lang import lang_pl, lang_en
 from .config_handler import ConfigHandler
 from .button_handler import ButtonHandler
 from .video_handler import VideoHandler
-from ..options.options_handler import OptionsHandler
+from .options_handler import OptionsHandler
 
 class UIHandler:
     # FIXME: Refactor this class, Its too long

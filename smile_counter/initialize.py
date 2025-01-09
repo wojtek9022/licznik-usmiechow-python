@@ -6,10 +6,10 @@ and validation of required resources before the main application starts.
 """
 
 import os
-from .handlers.config_handler import ConfigHandler
+from app.handlers.config_handler import ConfigHandler
 from typing import Any
 
-def ensure_app_initialized() -> Any:
+def get_initialized_config() -> Any:
     """
     Initialize application configuration and resources.
 

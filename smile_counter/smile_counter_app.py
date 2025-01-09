@@ -1,7 +1,7 @@
 import tkinter as tk
 import tkinter.messagebox  
-from app.initialize import ensure_app_initialized
-ensure_app_initialized()  
+from initialize import get_initialized_config
+get_initialized_config()  
 
 from app.handlers.ui_handler import UIHandler
 

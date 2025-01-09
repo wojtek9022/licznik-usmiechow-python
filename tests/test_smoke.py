@@ -4,7 +4,7 @@ import cv2
 import logging
 from pathlib import Path
 from smile_counter.app.src.detectors.smile_detector import SmileDetector
-from smile_counter.app.initialize import ensure_app_initialized
+from smile_counter.initialize import get_initialized_config
 
 class SmileDetectorSmokeTest(unittest.TestCase):
     @classmethod
@@ -23,7 +23,7 @@ class SmileDetectorSmokeTest(unittest.TestCase):
         cls.logger = logging.getLogger(__name__)
         
         # Initialize config and detector
-        cls.config = ensure_app_initialized()
+        cls.config = get_initialized_config()
         cls.detector = SmileDetector(cls.config)
         
         # Define test paths
