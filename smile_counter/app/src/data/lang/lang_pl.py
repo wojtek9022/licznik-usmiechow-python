@@ -1,6 +1,6 @@
 # Main menu
 TITLE_TEXT = "Licznik Uśmiechów"
-VERSION_TEXT = "Wersja: 2.3.3"
+VERSION_TEXT = "Wersja: 3.0.0"
 START_BUTTON_TEXT = "Start"
 OPTIONS_BUTTON_TEXT = "Opcje"
 EXIT_BUTTON_TEXT = "Wyjście"
