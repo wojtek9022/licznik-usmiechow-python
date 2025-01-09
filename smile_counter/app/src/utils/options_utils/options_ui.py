@@ -3,7 +3,7 @@ import tkinter.ttk as ttk
 from typing import Dict, Any, Callable
 from .options_types import OptionsConfig
 from .options_validator import OptionsValidator, ValidationError
-from ..video_utils.camera_utils import get_available_cameras
+from ..video_frame_utils.camera_utils import get_available_cameras
 
 class OptionsUI:
     # FIXME Refactor this class, it's too long

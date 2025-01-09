@@ -7,6 +7,7 @@ class ExpressionHandler:
         self.config = config
         self.face_detector = face_detector
         self.smile_detector = smile_detector
+        # FIXME: Magic string
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         self.continuous_smile_start = 0  # Track when smile started
         

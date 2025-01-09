@@ -5,10 +5,11 @@ from PIL import Image, ImageTk
 import tkinter as tk
 import time
 from .config_handler import ConfigHandler
-from ..src.utils.video_utils.expression_handler import ExpressionHandler
+from ..src.utils.video_frame_utils.expression_handler import ExpressionHandler
 from ..src.detectors.smile_detector import SmileDetector
 from ..src.detectors.face_detector import FaceDetector
-from ..src.utils.video_utils.video_capture_wrapper import VideoCaptureWrapper
+from ..src.utils.video_frame_utils.video_capture_wrapper import VideoCaptureWrapper
+from ..src.utils.video_frame_utils.effects_handler import EffectsHandler
 
 # Suppress OpenCV warnings
 logging.getLogger("cv2").setLevel(logging.ERROR)
@@ -41,6 +42,8 @@ class VideoHandler:
             self.smile_detector
         )
         
+        self.effects_handler = EffectsHandler()
+        
         self.running = False
         self.video_frame = None
         self.canvas = None
@@ -69,8 +72,19 @@ class VideoHandler:
             self.master.after(10, self.update_frame)
 
     def _process_frame(self, frame: cv2.Mat) -> None:
-        """Process frame for expression detection."""
+        """Process frame for expression detection and effects."""
         processed_frame = self.expression_handler.process_frame(frame)
+        
+        # Apply effects if faces were detected
+        if hasattr(self.expression_handler, 'face_detector'):
+            faces = self.expression_handler.face_detector.detect(
+                cv2.cvtColor(processed_frame, cv2.COLOR_BGR2GRAY)
+            )
+            for face_coords in faces:
+                processed_frame = self.effects_handler.apply_random_effect(
+                    processed_frame, face_coords
+                )
+        
         self._display_frame(processed_frame)
 
     def _display_frame(self, frame: cv2.Mat) -> None:

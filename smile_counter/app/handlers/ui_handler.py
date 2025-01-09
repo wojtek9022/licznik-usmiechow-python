@@ -105,15 +105,16 @@ class UIHandler:
 
     def _load_images(self) -> None:
         current_dir: str = os.path.dirname(os.path.abspath(__file__))  # Get current script directory
+        #FIXME: Refactor this image paths
         # Get handlers directory
         current_dir = os.path.dirname(os.path.abspath(__file__))
         # Get app directory
         app_dir = os.path.dirname(current_dir)
         # Build paths to images in src/img
-        self.icon_path = os.path.join(app_dir, 'src', 'data', 'img', 'icon.ico')
-        self.flag_en_path = os.path.join(app_dir, 'src', 'data', 'img', 'flag_en.png')
-        self.flag_pl_path = os.path.join(app_dir, 'src', 'data', 'img', 'flag_pl.png')
-        self.logo_path: str = os.path.join(app_dir, 'src', 'data', 'img', 'main_menu_logo.png')
+        self.icon_path = os.path.join(app_dir, 'src', 'data', 'img', 'menu', 'icon.ico')
+        self.flag_en_path = os.path.join(app_dir, 'src', 'data', 'img', 'menu', 'flag_en.png')
+        self.flag_pl_path = os.path.join(app_dir, 'src', 'data', 'img', 'menu', 'flag_pl.png')
+        self.logo_path: str = os.path.join(app_dir, 'src', 'data', 'img', 'menu', 'main_menu_logo.png')
         icon_image: Image.Image = Image.open(self.icon_path)
         icon_photo: ImageTk.PhotoImage = ImageTk.PhotoImage(icon_image)
         self.master.iconphoto(True, icon_photo)
