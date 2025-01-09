@@ -6,7 +6,8 @@ from .options_validator import OptionsValidator, ValidationError
 from ..video_frame_utils.camera_utils import get_available_cameras
 
 class OptionsUI:
-    # FIXME Refactor this class, it's too long
+    _camera_list = None  # Static cache for camera list
+
     """
     Manages the options configuration window interface.
 
@@ -125,21 +126,7 @@ class OptionsUI:
             self.tooltip_bindings[option_name] = (label, tooltip_func)
 
         if option_name == 'CAMERA_SOURCE':
-            cameras = get_available_cameras()
-            
-            combo = ttk.Combobox(parent, width=30, state="readonly")
-            combo['values'] = [name for _, name in cameras]
-            
-            # Find current camera index
-            current_idx = 0
-            for idx, (cam_idx, _) in enumerate(cameras):
-                if cam_idx == int(value):
-                    current_idx = idx
-            combo.current(current_idx)
-            
-            # Store mapping for retrieving camera index
-            combo.camera_indices = {name: idx for idx, name in cameras}
-            entry = combo
+            entry = self._create_camera_combobox(option_name, value, row, parent)
         elif option_name == 'DEBUG_MODE' or option_name == 'APPLY_FACE_EFFECTS':
             var = tk.BooleanVar(value=value)  # Convert to bool
             self.vars[option_name] = var  # Store var reference
@@ -163,6 +150,25 @@ class OptionsUI:
         entry.bind('<FocusOut>', lambda e: self._validate_entry(option_name))
         
         return label, entry
+
+    def _create_camera_combobox(self, option_name: str, value: Any, row: int, parent: tk.Frame) -> ttk.Combobox:
+        # Only get cameras if not cached
+        if OptionsUI._camera_list is None:
+            OptionsUI._camera_list = get_available_cameras()
+        
+        combo = ttk.Combobox(parent, width=30, state="readonly")
+        combo['values'] = [name for _, name in OptionsUI._camera_list]
+        
+        # Find current camera index
+        current_idx = 0
+        for idx, (cam_idx, _) in enumerate(OptionsUI._camera_list):
+            if cam_idx == int(value):
+                current_idx = idx
+        combo.current(current_idx)
+        
+        # Store mapping for retrieving camera index
+        combo.camera_indices = {name: idx for idx, name in OptionsUI._camera_list}
+        return combo
 
     def _create_tooltip_func(self, option_name: str) -> Callable:
         def show_tooltip(event):
