@@ -25,13 +25,7 @@ class VideoHandler:
         self.language = language
         self.ui_handler = ui_handler
         self.config = ConfigHandler().get_config()
-        
-        # Initialize video capture with DirectShow backend
-        camera_source = int(self.config.CAMERA_SOURCE)
-        self.video_capture_wrapper = VideoCaptureWrapper(
-            source=camera_source,
-            api_preference=cv2.CAP_DSHOW
-        )
+        self.camera_source = int(self.config.CAMERA_SOURCE)
         
         # Initialize detectors
         self.face_detector = FaceDetector(self.config)
@@ -43,24 +37,35 @@ class VideoHandler:
         )
         
         self.effects_handler = EffectsHandler()
-        
+        self.video_capture_wrapper = None
         self.running = False
         self.video_frame = None
         self.canvas = None
         self.master.bind('<Escape>', self._handle_escape)
 
+    def _initialize_camera(self) -> None:
+        """Initialize or reinitialize camera capture."""
+        if self.video_capture_wrapper:
+            self.video_capture_wrapper.release()
+            
+        self.video_capture_wrapper = VideoCaptureWrapper(
+            source=self.camera_source,
+            api_preference=cv2.CAP_DSHOW
+        )
+
     def start_video(self) -> None:
+        """Start or restart video capture."""
+        self._initialize_camera()
         self.ui_handler.hide_main_menu()
         self._setup_video_frame()
         self.running = True
         self.update_frame()
 
     def stop_video(self) -> None:
+        """Stop video but don't release camera."""
         self.running = False
         if self.video_frame:
             self.video_frame.destroy()
-        self.video_capture_wrapper.release()
-        cv2.destroyAllWindows()
 
     def update_frame(self) -> None:
         if not self.running:
