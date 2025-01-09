@@ -32,7 +32,8 @@ class OptionsHandler:
         'COUNTED_SMILE_COOLDOWN_TIME': {'type': float, 'row': 6},
         'CAMERA_SOURCE': {'type': int, 'row': 7},
         'DEBUG_MODE': {'type': bool, 'row': 8},
-        'APPLY_FACE_EFFECTS': {'type': bool, 'row':9}
+        'APPLY_FACE_EFFECTS': {'type': bool, 'row':9},
+        'AUTO_CONFIG_ADJUSTING': {'type': bool, 'row': 10},
     }
 
     def __init__(self, master: tk.Tk, language: object) -> None:

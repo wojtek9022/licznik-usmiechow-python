@@ -78,6 +78,18 @@ class OptionsValidator:
                 type=bool,
                 error_message="Debug mode must be True or False"
             ),
+            'APPLY_FACE_EFFECTS': ValidationRule(
+                min_value=0,
+                max_value=1,
+                type=bool,
+                error_message="Apply face effects must be True or False"
+            ),
+            'AUTO_CONFIG_ADJUSTING': ValidationRule(
+                min_value=0,
+                max_value=1,
+                type=bool,
+                error_message="Auto config adjusting must be True or False"
+            ),
             'CAMERA_SOURCE': ValidationRule(
                 min_value=0,
                 max_value=10,

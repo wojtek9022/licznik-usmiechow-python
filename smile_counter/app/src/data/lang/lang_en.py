@@ -21,6 +21,7 @@ LANGUAGE_TEXT = "Language:"
 DEBUG_MODE_TEXT = "Debug mode:"
 CAMERA_SOURCE_TEXT = "Camera Source:"
 APPLY_FACE_EFFECTS_TEXT = "Apply Face Effects"
+AUTO_CONFIG_ADJUSTING_TEXT = "Auto-adjust Detection Settings (experimental)"
 
 # Tooltips in options window
 FACE_SCALE_FACTOR_TOOLTIP = "Scaling factor for face detection.\nLarger values detect smaller faces, \
@@ -46,7 +47,9 @@ Other cameras, if present, should be available in the dropdown list."
 
 DEBUG_MODE_TOOLTIP = "Show detection rectangles and additional debug information."
 
-APPLY_FACE_EFFECTS_TOOLTIP = "Enable or disable funny face effects like beards and mustaches"
+APPLY_FACE_EFFECTS_TOOLTIP = "Enable or disable funny face effects like beards and mustaches."
+
+AUTO_CONFIG_ADJUSTING_TOOLTIP = "Automatically adjust detection parameters based on many factors."
 
 # Main program
 DETECTED_SMILES_TEXT = "Detected smiles: {count}"

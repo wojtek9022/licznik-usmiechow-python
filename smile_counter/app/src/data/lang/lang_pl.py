@@ -21,6 +21,7 @@ LANGUAGE_TEXT = "Język:"
 DEBUG_MODE_TEXT = "Tryb debugowania"
 CAMERA_SOURCE_TEXT = "Źródło kamery:"
 APPLY_FACE_EFFECTS_TEXT = "Efekty na twarzy"
+AUTO_CONFIG_ADJUSTING_TEXT = "Automatyczne dostosowanie ustawień (eksperymentalne)"
 
 # Tooltips in options window
 FACE_SCALE_FACTOR_TOOLTIP = "Współczynnik skalowania dla wykrywania twarzy.\nWiększe wartości wykrywają mniejsze twarze, \
@@ -47,7 +48,9 @@ Inne, o ile występują, powinny być dostępne w kolejnych pozycjach w rozwijan
 
 DEBUG_MODE_TOOLTIP = "Pokaż prostokąty detekcji i dodatkowe informacje debugowania."
 
-APPLY_FACE_EFFECTS_TOOLTIP = "Włącz lub wyłącz zabawne efekty na twarzy jak brody i wąsy"
+APPLY_FACE_EFFECTS_TOOLTIP = "Włącz lub wyłącz zabawne efekty na twarzy jak brody i wąsy."
+
+AUTO_CONFIG_ADJUSTING_TOOLTIP = "Automatycznie dostosuj parametry wykrywania w zależności od wielu czynników."
 
 # Main program
 DETECTED_SMILES_TEXT = "Wykryte uśmiechy: {count}"
