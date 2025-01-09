@@ -171,3 +171,4 @@ smile_counter/app/src/config.py
 /smile_counter/output
 /smile_counter/tests/data
 /tests/data
+file_version_info.txt
