@@ -1,6 +1,7 @@
 import cv2
 import os
 import random
+import time
 from typing import List, Tuple
 import numpy as np
 from PIL import Image
@@ -20,6 +21,12 @@ class EffectsHandler:
         self.effects_base_path = os.path.join(app_dir, 'data', 'img', 'effects')
         
         self._load_effects()
+
+        # Add these new instance variables
+        self.last_effect_time = time.time()
+        self.last_effect_function = None
+        #FIXME: magic numbers
+        self.effect_duration = 5.0  # Duration in seconds
 
     def _load_effects(self) -> None:
         """Load effects from respective directories."""
@@ -94,14 +101,29 @@ class EffectsHandler:
         return frame
 
     def apply_random_effect(self, frame: np.ndarray, face_coords: Tuple[int, int, int, int]) -> np.ndarray:
-        """Apply random effect to the frame if DEBUG_MODE is enabled."""
+        """Apply random effect to the frame if DEBUG_MODE is enabled. Effect changes every x seconds."""
         if not self.config.DEBUG_MODE:
             return frame
             
-        effect_functions = [
-            self._apply_hair_effect,
-            self._apply_mustache_effect
-        ]
+        current_time = time.time()
         
-        chosen_effect = random.choice(effect_functions)
-        return chosen_effect(frame, face_coords)
+        # Simplified face coordinates validation
+        has_valid_face = (
+            face_coords is not None and 
+            len(face_coords) == 4
+        )
+        
+        if (self.last_effect_function is None or 
+            current_time - self.last_effect_time >= self.effect_duration or 
+            not has_valid_face):
+            
+            effect_functions = [
+                self._apply_hair_effect,
+                self._apply_mustache_effect
+            ]
+            self.last_effect_function = random.choice(effect_functions)
+            self.last_effect_time = current_time
+        
+        if has_valid_face:
+            return self.last_effect_function(frame, face_coords)
+        return frame
