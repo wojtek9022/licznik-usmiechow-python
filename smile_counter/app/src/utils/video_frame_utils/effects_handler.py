@@ -24,9 +24,12 @@ class EffectsHandler:
 
         # Add these new instance variables
         self.last_effect_time = time.time()
-        self.last_effect_function = None
-        #FIXME: magic numbers
-        self.effect_duration = 5.0  # Duration in seconds
+        self.current_effect_func = None
+        self.effect_duration = 5.0
+        self.effect_functions = {
+            'hair': self._apply_hair_effect,
+            'mustache': self._apply_mustache_effect
+        }
 
     def _load_effects(self) -> None:
         """Load effects from respective directories."""
@@ -54,11 +57,32 @@ class EffectsHandler:
                     effect_files.append(os.path.join(root, file))
         return effect_files
 
+    def _clean_image_profile(self, image_path: str) -> str:
+        """Remove problematic sRGB profile from PNG images."""
+        try:
+            with Image.open(image_path) as img:
+                # Create clean copy without profile
+                cleaned = Image.new(img.mode, img.size)
+                cleaned.putdata(list(img.getdata()))
+                
+                # Save to temporary file
+                temp_path = image_path + '.tmp'
+                cleaned.save(temp_path, 'PNG')
+                
+                # Replace original with cleaned version
+                os.replace(temp_path, image_path)
+                
+        except Exception as e:
+            print(f"Warning: Could not clean image profile for {image_path}: {e}")
+        
+        return image_path
+
     def _get_random_effect(self, effect_type: str) -> str:
         """Get random effect from specified type including subdirectories."""
         if not self.effects[effect_type]:
             return None
-        return random.choice(self.effects[effect_type])
+        effect_path = random.choice(self.effects[effect_type])
+        return self._clean_image_profile(effect_path)
 
     def _apply_hair_effect(self, frame: np.ndarray, face_coords: Tuple[int, int, int, int]) -> np.ndarray:
         """Apply hair effect above the face area."""
@@ -85,18 +109,35 @@ class EffectsHandler:
         return self._overlay_effect(frame, effect_img, 
                                   (x + int(w*0.2), y + int(h*0.6)))
 
-    def _overlay_effect(self, frame: np.ndarray, effect: np.ndarray, 
-                       position: Tuple[int, int]) -> np.ndarray:
+    def _overlay_effect(self, frame: np.ndarray, effect: np.ndarray, position: Tuple[int, int]) -> np.ndarray:
         """Overlay effect on frame with transparency."""
         x, y = position
-        if effect.shape[2] < 4:  # No alpha channel
+        frame_h, frame_w = frame.shape[:2]
+        effect_h, effect_w = effect.shape[:2]
+        
+        # Ensure coordinates are within frame bounds
+        x = max(0, min(x, frame_w))
+        y = max(0, min(y, frame_h))
+        
+        # Calculate valid overlay region
+        x_end = min(x + effect_w, frame_w)
+        y_end = min(y + effect_h, frame_h)
+        
+        # Skip if no valid overlay region
+        if x_end <= x or y_end <= y:
             return frame
             
-        alpha = effect[:, :, 3] / 255.0
+        # Calculate effect region to use
+        effect_x = 0
+        effect_y = 0
+        effect_w = x_end - x
+        effect_h = y_end - y
+        
+        alpha = effect[effect_y:effect_y+effect_h, effect_x:effect_x+effect_w, 3] / 255.0
         for c in range(3):
-            frame[y:y+effect.shape[0], x:x+effect.shape[1], c] = \
-                frame[y:y+effect.shape[0], x:x+effect.shape[1], c] * (1 - alpha) + \
-                effect[:, :, c] * alpha
+            frame[y:y+effect_h, x:x+effect_w, c] = \
+                frame[y:y+effect_h, x:x+effect_w, c] * (1 - alpha) + \
+                effect[effect_y:effect_y+effect_h, effect_x:effect_x+effect_w, c] * alpha
                 
         return frame
 
@@ -113,17 +154,15 @@ class EffectsHandler:
             len(face_coords) == 4
         )
         
-        if (self.last_effect_function is None or 
+        if (self.current_effect_func is None or 
             current_time - self.last_effect_time >= self.effect_duration or 
             not has_valid_face):
             
-            effect_functions = [
-                self._apply_hair_effect,
-                self._apply_mustache_effect
-            ]
-            self.last_effect_function = random.choice(effect_functions)
+            effect_category = random.choice(list(self.effect_functions.keys()))
+            self.current_effect_func = self.effect_functions[effect_category]
             self.last_effect_time = current_time
         
-        if has_valid_face:
-            return self.last_effect_function(frame, face_coords)
+        if has_valid_face and self.current_effect_func:
+            return self.current_effect_func(frame, face_coords)
+                
         return frame
