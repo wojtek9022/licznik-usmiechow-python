@@ -25,6 +25,7 @@ class EffectsHandler:
         # Add these new instance variables
         self.last_effect_time = time.time()
         self.current_effect_func = None
+        self.current_effect_path = None  # Add this to track current image
         self.effect_duration = 5.0
         self.effect_functions = {
             'hair': self._apply_hair_effect,
@@ -154,15 +155,25 @@ class EffectsHandler:
             len(face_coords) == 4
         )
         
+        # Change effect if needed
         if (self.current_effect_func is None or 
             current_time - self.last_effect_time >= self.effect_duration or 
             not has_valid_face):
             
             effect_category = random.choice(list(self.effect_functions.keys()))
             self.current_effect_func = self.effect_functions[effect_category]
+            self.current_effect_path = self._get_random_effect(effect_category)
             self.last_effect_time = current_time
         
-        if has_valid_face and self.current_effect_func:
-            return self.current_effect_func(frame, face_coords)
+        if has_valid_face and self.current_effect_path:
+            x, y, w, h = face_coords
+            effect_img = cv2.imread(self.current_effect_path, cv2.IMREAD_UNCHANGED)
+            
+            if self.current_effect_func == self._apply_hair_effect:
+                effect_img = cv2.resize(effect_img, (w, int(h*0.6)))
+                return self._overlay_effect(frame, effect_img, (x, y-int(h*0.3)))
+            elif self.current_effect_func == self._apply_mustache_effect:
+                effect_img = cv2.resize(effect_img, (int(w*0.6), int(h*0.15)))
+                return self._overlay_effect(frame, effect_img, (x + int(w*0.2), y + int(h*0.6)))
                 
         return frame
