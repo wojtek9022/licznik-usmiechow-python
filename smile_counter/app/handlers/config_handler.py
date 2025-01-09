@@ -20,6 +20,8 @@ class ConfigHandler:
 
     _instance = None
     
+    # FIXME: This is required when adding new options to the config
+    # should depend on options themself and passed, not in the config_handler
     OPTION_TYPES = {
         'FACE_SCALE_FACTOR': float,
         'FACE_MIN_NEIGHBOURS': int,
@@ -27,7 +29,9 @@ class ConfigHandler:
         'SMILE_MIN_NEIGHBOURS': int,
         'TIME_TO_START_COUNTING': float,
         'COUNTED_SMILE_COOLDOWN_TIME': float,
-        'DEBUG_MODE': bool
+        'DEBUG_MODE': bool,
+        'APPLY_FACE_EFFECTS': bool,
+        'AUTO_CONFIG_ADJUSTING': bool
     }
 
     def __new__(cls):
