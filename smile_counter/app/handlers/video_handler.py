@@ -55,6 +55,17 @@ class VideoHandler:
 
     def start_video(self) -> None:
         """Start or restart video capture."""
+        # Reload config to get latest camera source
+        self.config = ConfigHandler().get_config()
+        new_camera_source = int(self.config.CAMERA_SOURCE)
+        
+        # Check if camera source changed
+        if new_camera_source != self.camera_source:
+            self.camera_source = new_camera_source
+            if self.video_capture_wrapper:
+                self.video_capture_wrapper.release()
+                self.video_capture_wrapper = None
+        
         self._initialize_camera()
         self.ui_handler.hide_main_menu()
         self._setup_video_frame()
