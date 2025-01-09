@@ -2,7 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import os
 from typing import Callable
-from app.src.lang import lang_pl, lang_en
+from ..src.data.lang import lang_pl, lang_en
 from .config_handler import ConfigHandler
 from .button_handler import ButtonHandler
 from .video_handler import VideoHandler
@@ -110,10 +110,10 @@ class UIHandler:
         # Get app directory
         app_dir = os.path.dirname(current_dir)
         # Build paths to images in src/img
-        self.icon_path = os.path.join(app_dir, 'src', 'img', 'icon.ico')
-        self.flag_en_path = os.path.join(app_dir, 'src', 'img', 'flag_en.png')
-        self.flag_pl_path = os.path.join(app_dir, 'src', 'img', 'flag_pl.png')
-        self.logo_path: str = os.path.join(app_dir, 'src', 'img', 'main_menu_logo.png')
+        self.icon_path = os.path.join(app_dir, 'src', 'data', 'img', 'icon.ico')
+        self.flag_en_path = os.path.join(app_dir, 'src', 'data', 'img', 'flag_en.png')
+        self.flag_pl_path = os.path.join(app_dir, 'src', 'data', 'img', 'flag_pl.png')
+        self.logo_path: str = os.path.join(app_dir, 'src', 'data', 'img', 'main_menu_logo.png')
         icon_image: Image.Image = Image.open(self.icon_path)
         icon_photo: ImageTk.PhotoImage = ImageTk.PhotoImage(icon_image)
         self.master.iconphoto(True, icon_photo)

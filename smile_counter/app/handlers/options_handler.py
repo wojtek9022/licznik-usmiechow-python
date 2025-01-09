@@ -5,7 +5,7 @@ from .config_handler import ConfigHandler
 from ..src.utils.options_utils.options_types import OptionsConfig
 from ..src.utils.options_utils.options_validator import OptionsValidator
 from ..src.utils.options_utils.options_ui import OptionsUI
-from ..src.lang import lang_en, lang_pl
+from ..src.data.lang import lang_en, lang_pl
 
 class OptionsHandler:
     """

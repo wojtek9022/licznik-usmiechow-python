@@ -47,7 +47,7 @@ class ConfigHandler:
             self.config_path = os.path.join(self.config_dir, 'config.ini')
             current_dir = os.path.dirname(os.path.abspath(__file__))  # Gets handlers directory
             app_dir = os.path.dirname(current_dir)  # Gets app directory
-            self.default_config_path = os.path.join(app_dir, 'src', 'utils', 'default_config.ini')
+            self.default_config_path = os.path.join(app_dir, 'src', 'utils', 'config_utils', 'default_config.ini')
             self._ensure_config_exists()
             self.initialized = True
             

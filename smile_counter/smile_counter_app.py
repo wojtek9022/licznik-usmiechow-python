@@ -1,5 +1,5 @@
 import tkinter as tk
-import tkinter.messagebox  
+import tkinter.messagebox  # Required for building an executable
 from initialize import get_initialized_config
 get_initialized_config()  
 
