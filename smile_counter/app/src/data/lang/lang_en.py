@@ -20,6 +20,7 @@ ERROR_MESSAGE_TEXT = "Error saving options: {error}"
 LANGUAGE_TEXT = "Language:"
 DEBUG_MODE_TEXT = "Debug mode:"
 CAMERA_SOURCE_TEXT = "Camera Source:"
+APPLY_FACE_EFFECTS_TEXT = "Apply Face Effects"
 
 # Tooltips in options window
 FACE_SCALE_FACTOR_TOOLTIP = "Scaling factor for face detection.\nLarger values detect smaller faces, \
@@ -44,6 +45,8 @@ CAMERA_SOURCE_TOOLTIP = "Select which camera to use for detection.\nDefault came
 Other cameras, if present, should be available in the dropdown list."
 
 DEBUG_MODE_TOOLTIP = "Show detection rectangles and additional debug information."
+
+APPLY_FACE_EFFECTS_TOOLTIP = "Enable or disable funny face effects like beards and mustaches"
 
 # Main program
 DETECTED_SMILES_TEXT = "Detected smiles: {count}"

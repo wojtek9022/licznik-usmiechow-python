@@ -164,7 +164,7 @@ class EffectsHandler:
         return frame
 
     def apply_random_effect(self, frame: np.ndarray, face_coords: Tuple[int, int, int, int]) -> np.ndarray:
-        if not self.config.DEBUG_MODE:
+        if not self.config.APPLY_FACE_EFFECTS:
             return frame
             
         current_time = time.time()

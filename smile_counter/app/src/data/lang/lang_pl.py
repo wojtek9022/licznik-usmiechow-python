@@ -20,6 +20,7 @@ ERROR_MESSAGE_TEXT = "Błąd zapisywania opcji: {error}"
 LANGUAGE_TEXT = "Język:"
 DEBUG_MODE_TEXT = "Tryb debugowania"
 CAMERA_SOURCE_TEXT = "Źródło kamery:"
+APPLY_FACE_EFFECTS_TEXT = "Efekty na twarzy"
 
 # Tooltips in options window
 FACE_SCALE_FACTOR_TOOLTIP = "Współczynnik skalowania dla wykrywania twarzy.\nWiększe wartości wykrywają mniejsze twarze, \
@@ -45,6 +46,8 @@ Domyślna kamera powinna znajdować się w pierwszej dostępnej opcji.\n\
 Inne, o ile występują, powinny być dostępne w kolejnych pozycjach w rozwijanej liście."
 
 DEBUG_MODE_TOOLTIP = "Pokaż prostokąty detekcji i dodatkowe informacje debugowania."
+
+APPLY_FACE_EFFECTS_TOOLTIP = "Włącz lub wyłącz zabawne efekty na twarzy jak brody i wąsy"
 
 # Main program
 DETECTED_SMILES_TEXT = "Wykryte uśmiechy: {count}"

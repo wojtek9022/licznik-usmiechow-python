@@ -140,7 +140,7 @@ class OptionsUI:
             # Store mapping for retrieving camera index
             combo.camera_indices = {name: idx for idx, name in cameras}
             entry = combo
-        elif option_name == 'DEBUG_MODE':
+        elif option_name == 'DEBUG_MODE' or option_name == 'APPLY_FACE_EFFECTS':
             var = tk.BooleanVar(value=value)  # Convert to bool
             self.vars[option_name] = var  # Store var reference
             entry = tk.Checkbutton(
@@ -214,9 +214,8 @@ class OptionsUI:
             return False
 
     def get_value(self, option_name: str) -> Any:
-        entry = self.entries[option_name]
-        if option_name == 'CAMERA_SOURCE':
-            return entry.camera_indices[entry.get()]
-        elif option_name == 'DEBUG_MODE':
+        if option_name in ('DEBUG_MODE', 'APPLY_FACE_EFFECTS'):
             return bool(self.vars[option_name].get())
-        return entry.get()
+        elif option_name == 'CAMERA_SOURCE':
+            return self.entries[option_name].camera_indices[self.entries[option_name].get()]
+        return self.entries[option_name].get()
