@@ -1,6 +1,6 @@
 # Main menu
 TITLE_TEXT = "Smile Counter"
-VERSION_TEXT = "Version: 3.0.0"
+VERSION_TEXT = "Version: 3.1.0"
 START_BUTTON_TEXT = "Start"
 OPTIONS_BUTTON_TEXT = "Options"
 EXIT_BUTTON_TEXT = "Exit"

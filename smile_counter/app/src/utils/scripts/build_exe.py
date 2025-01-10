@@ -2,6 +2,10 @@ import os
 import subprocess
 from pathlib import Path
 
+# FIXME: You might need to turn off your antivirus software to run this script
+# Windows treats it as a virus because it uses raw pyinstaller command 
+# instead of bootstrap version
+
 def cleanup_build_files(output_dir: Path, app_name: str) -> None:
     """Remove all build files except .exe."""
     try:
@@ -43,7 +47,7 @@ def build_exe():
     output_dir.mkdir(exist_ok=True)
     
     # Version info
-    VERSION = "3.0.0"
+    VERSION = "3.1.0"
     FILE_VERSION = VERSION.replace('.', ',')
     
     # Create version info
