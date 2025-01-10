@@ -21,10 +21,12 @@ class VideoHandler:
     """
     
     def __init__(self, master: tk.Tk, language: object, ui_handler: object) -> None:
+        self.config_handler = ConfigHandler()
+        self.config_handler.add_observer(self)
         self.master = master
         self.language = language
         self.ui_handler = ui_handler
-        self.config = ConfigHandler().get_config()
+        self.config = self.config_handler.get_config()
         self.camera_source = int(self.config.CAMERA_SOURCE)
         
         # Initialize detectors
@@ -42,6 +44,14 @@ class VideoHandler:
         self.video_frame = None
         self.canvas = None
         self.master.bind('<Escape>', self._handle_escape)
+
+    def on_config_changed(self, new_config):
+        """Handle config changes"""
+        self.config = new_config
+        self.camera_source = int(self.config.CAMERA_SOURCE)
+        self.expression_handler.on_config_changed(new_config)
+        self.face_detector.on_config_changed(new_config) 
+        self.smile_detector.on_config_changed(new_config)
 
     def _initialize_camera(self) -> None:
         """Initialize or reinitialize camera capture."""

@@ -41,6 +41,7 @@ class ConfigHandler:
         
     def __init__(self):
         if not hasattr(self, 'initialized'):
+            self.observers = []
             self.config = ConfigParser(
                 comment_prefixes=('#',';'),
                 allow_no_value=True,
@@ -180,6 +181,17 @@ class ConfigHandler:
         for key, value in updates.items():
             self.config.set('Settings', key, str(value))
         self._save_config()
+        self.notify_observers()  # Notify after config update
+
+    def add_observer(self, observer):
+        """Add observer to be notified of config changes"""
+        self.observers.append(observer)
+    
+    def notify_observers(self):
+        """Notify all observers about config change"""
+        new_config = self.get_config()
+        for observer in self.observers:
+            observer.on_config_changed(new_config)
 
     def _ensure_smile_files(self) -> None:
         """Ensure smile log file exists"""

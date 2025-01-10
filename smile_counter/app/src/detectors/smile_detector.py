@@ -11,12 +11,17 @@ class SmileDetector(ExpressionDetector):
     def __init__(self, config):
         self.config = config
         self.config_handler = ConfigHandler()
+        self.config_handler.add_observer(self)
         self.smile_cascade, self.face_cascade = CascadeLoader.load_cascades()
         self.smiles_detected = int(config.TOTAL_SMILES_DETECTED)
         self.smile_active = False
         self.last_smile_time = 0
         self.show_counted_text = False
         self.counted_text_timestamp = 0
+
+    def on_config_changed(self, new_config):
+        """Handle config changes"""
+        self.config = new_config
 
     def detect(self, frame, scaleFactor=None, minNeighbors=None):
         """Detect smiles in the given frame using config parameters"""

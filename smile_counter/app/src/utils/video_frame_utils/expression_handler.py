@@ -1,15 +1,22 @@
 import cv2
 from typing import List, Tuple
 import time
+from app.handlers.config_handler import ConfigHandler
 
 class ExpressionHandler:
     def __init__(self, config, face_detector, smile_detector):
+        self.config_handler = ConfigHandler()
+        self.config_handler.add_observer(self)
         self.config = config
         self.face_detector = face_detector
         self.smile_detector = smile_detector
         # FIXME: Magic string
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         self.continuous_smile_start = 0  # Track when smile started
+
+    def on_config_changed(self, new_config):
+        """Handle config changes"""
+        self.config = new_config
         
     def convert_to_gray(self, frame) -> cv2.Mat:
         return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
