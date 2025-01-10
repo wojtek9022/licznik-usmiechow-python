@@ -52,7 +52,10 @@ class ConfigHandler:
             current_dir = os.path.dirname(os.path.abspath(__file__))  # Gets handlers directory
             app_dir = os.path.dirname(current_dir)  # Gets app directory
             self.default_config_path = os.path.join(app_dir, 'src', 'utils', 'config_utils', 'default_config.ini')
+            self.smile_log_path = os.path.join(self.config_dir, 'smile_log.log')
             self._ensure_config_exists()
+            self._ensure_smile_files()
+            self._update_total_smiles()
             self.initialized = True
             
     def _load_default_config(self) -> ConfigParser:
@@ -177,3 +180,29 @@ class ConfigHandler:
         for key, value in updates.items():
             self.config.set('Settings', key, str(value))
         self._save_config()
+
+    def _ensure_smile_files(self) -> None:
+        """Ensure smile log file exists"""
+        if not os.path.exists(self.smile_log_path):
+            open(self.smile_log_path, 'a').close()
+
+    def _count_total_smiles(self) -> int:
+        """Count total smiles from log file"""
+        try:
+            with open(self.smile_log_path, 'r') as f:
+                return sum(1 for line in f if '[SMILE DETECTED]' in line)
+        except FileNotFoundError:
+            return 0
+
+    def _update_total_smiles(self) -> None:
+        """Update total smiles in config"""
+        total = self._count_total_smiles()
+        self.update_config({'TOTAL_SMILES_DETECTED': str(total)})
+
+    def log_smile(self) -> None:
+        """Log new smile detection"""
+        from datetime import datetime
+        timestamp = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+        with open(self.smile_log_path, 'a', encoding='utf-8') as f:
+            f.write(f'[SMILE DETECTED] {timestamp}\n')
+        self._update_total_smiles()

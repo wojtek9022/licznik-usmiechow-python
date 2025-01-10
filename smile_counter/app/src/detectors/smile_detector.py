@@ -2,6 +2,7 @@ from .abstract_detectors.base_detector import ExpressionDetector
 import cv2
 import time
 from .cascade_loader import CascadeLoader
+from app.handlers.config_handler import ConfigHandler
 import tkinter as tk
 
 class SmileDetector(ExpressionDetector):
@@ -9,8 +10,9 @@ class SmileDetector(ExpressionDetector):
 
     def __init__(self, config):
         self.config = config
+        self.config_handler = ConfigHandler()
         self.smile_cascade, self.face_cascade = CascadeLoader.load_cascades()
-        self.smiles_detected = 0
+        self.smiles_detected = int(config.TOTAL_SMILES_DETECTED)
         self.smile_active = False
         self.last_smile_time = 0
         self.show_counted_text = False
@@ -56,6 +58,7 @@ class SmileDetector(ExpressionDetector):
         if smile_detected:
             if not self.smile_active and (current_time - self.last_smile_time) > cooldown_time:
                 self.smiles_detected += 1
+                self.config_handler.log_smile()
                 self.smile_active = True
                 self.last_smile_time = current_time
                 self.show_counted_text = True
