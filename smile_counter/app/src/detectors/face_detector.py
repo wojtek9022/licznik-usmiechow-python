@@ -1,11 +1,18 @@
 from .abstract_detectors.base_detector import ExpressionDetector
 import cv2
 from app.src.detectors.cascade_loader import CascadeLoader
+from app.handlers.config_handler import ConfigHandler
 
 class FaceDetector(ExpressionDetector):
     def __init__(self, config):
         self.config = config
+        self.config_handler = ConfigHandler()
+        self.config_handler.add_observer(self)
         _, self.face_cascade = CascadeLoader.load_cascades()
+
+    def on_config_changed(self, new_config):
+        """Handle config changes"""
+        self.config = new_config
 
     def detect(self, frame, region=None):
         return self.face_cascade.detectMultiScale(
