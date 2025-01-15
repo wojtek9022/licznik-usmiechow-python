@@ -6,6 +6,10 @@ OPTIONS_BUTTON_TEXT = "Options"
 EXIT_BUTTON_TEXT = "Exit"
 LOGO_NOT_FOUND_TEXT = "[Logo not found]"
 
+# Loading messages
+OPTIONS_LOADING_TEXT = "Loading options, please wait..."
+VIDEO_LOADING_TEXT = "Starting camera, please wait..."
+
 # Statistics window
 STATISTICS_BUTTON_TEXT = "Statistics"
 STATISTICS_TITLE_TEXT = "Smile Statistics"

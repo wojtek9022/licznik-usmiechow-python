@@ -53,6 +53,23 @@ class UIHandler:
 
     def start_video(self) -> None:
         """Initialize and start video handling"""
+        # Create loading label
+        loading_frame = tk.Frame(self.master)
+        loading_frame.place(relx=0.02, rely=0.95, anchor="sw")
+        
+        loading_text = self.language.VIDEO_LOADING_TEXT if hasattr(self.language, 'VIDEO_LOADING_TEXT') else "Starting camera, please wait..."
+        loading_label = tk.Label(
+            loading_frame, 
+            text=loading_text,
+            font=("Helvetica", 12, "bold"),
+            fg="green"
+        )
+        loading_label.pack(pady=10, padx=2)
+
+        # Update GUI to show loading message
+        self.master.update()
+
+        # Initialize video handler
         if not self.video_handler:
             self.video_handler = VideoHandler(
                 self.master,
@@ -61,14 +78,37 @@ class UIHandler:
             )
         self.video_handler.start_video()
 
+        # Remove loading message
+        loading_frame.destroy()
+
     def cleanup(self) -> None:
         """Clean up resources before closing"""
         if self.video_handler:
             self.video_handler.stop_video()
 
     def show_options(self) -> None:
-        """Show options configuration window"""
+        """Show options configuration window with loading message"""
+        # Create loading label
+        loading_frame = tk.Frame(self.master)
+        loading_frame.place(relx=0.02, rely=0.95, anchor="sw")  # Position at bottom left
+        
+        loading_text = self.language.OPTIONS_LOADING_TEXT if hasattr(self.language, 'OPTIONS_LOADING_TEXT') else "Loading options, please wait..."
+        loading_label = tk.Label(
+            loading_frame, 
+            text=loading_text,
+            font=("Helvetica", 14, "bold"),
+            fg="blue"
+        )
+        loading_label.pack(pady=10, padx=2)
+
+        # Update GUI to show loading message
+        self.master.update()
+
+        # Show options window
         self.options_handler.show_options()
+
+        # Remove loading message
+        loading_frame.destroy()
 
     def show_statistics(self) -> None:
         """Show statistics window"""
