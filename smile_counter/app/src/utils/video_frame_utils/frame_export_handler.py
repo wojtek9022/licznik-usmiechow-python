@@ -12,8 +12,7 @@ class FrameExportHandler:
 
     def _setup_export_directory(self) -> str:
         """Create export directory if it doesn't exist."""
-        config_dir = os.path.dirname(ConfigHandler().config_path)
-        export_dir = os.path.join(config_dir, 'detected_smiles_images')
+        export_dir = os.path.expanduser(self.config.SMILE_FRAMES_PATH)
         
         if not os.path.exists(export_dir):
             os.makedirs(export_dir)

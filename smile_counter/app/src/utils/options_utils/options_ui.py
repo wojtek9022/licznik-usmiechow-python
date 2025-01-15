@@ -4,6 +4,7 @@ from typing import Dict, Any, Callable
 from .options_types import OptionsConfig
 from .options_validator import OptionsValidator, ValidationError
 from ..video_frame_utils.camera_utils import get_available_cameras
+from tkinter import filedialog
 
 class OptionsUI:
     _camera_list = None  # Static cache for camera list
@@ -137,6 +138,40 @@ class OptionsUI:
                 onvalue=True,
                 offvalue=False
             )
+        elif option_name == 'SMILE_FRAMES_PATH':
+            entry_frame = tk.Frame(parent)
+            entry_frame.grid(row=row, column=1, padx=10, pady=5, sticky='ew')
+            
+            entry = tk.Entry(entry_frame)
+            entry.insert(0, str(value))
+            entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
+            
+            def select_directory():
+                directory = filedialog.askdirectory(
+                    initialdir=entry.get(),
+                    title=self.language.SELECT_DIRECTORY_TEXT
+                )
+                if directory:
+                    entry.delete(0, tk.END)
+                    entry.insert(0, directory)
+                    self._validate_entry(option_name)
+            
+            select_btn = tk.Button(
+                entry_frame,
+                text="...",
+                command=select_directory,
+                width=3
+            )
+            select_btn.pack(side=tk.LEFT, padx=(5, 0))
+            
+            # Add error label
+            error_label = tk.Label(parent, text="", fg="red")
+            error_label.grid(row=row, column=2, padx=10, pady=5)
+            self.error_labels[option_name] = error_label
+            
+            entry.bind('<FocusOut>', lambda e: self._validate_entry(option_name))
+            
+            return label, entry
         else:
             entry = tk.Entry(parent)
             entry.insert(0, str(value))

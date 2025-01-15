@@ -35,7 +35,9 @@ DEBUG_MODE_TEXT = "Debug mode:"
 CAMERA_SOURCE_TEXT = "Camera Source:"
 APPLY_FACE_EFFECTS_TEXT = "Apply Face Effects"
 AUTO_CONFIG_ADJUSTING_TEXT = "Auto-adjust Detection Settings (experimental)"
-EXPORT_SMILE_FRAMES_TEXT = "Export Smile Frames"
+EXPORT_SMILE_FRAMES_TEXT = "Export Detected Smile"
+SMILE_FRAMES_PATH_TEXT = "Detected Smile Frames Directory"
+SELECT_DIRECTORY_TEXT = "Select Directory"
 
 # Tooltips in options window
 FACE_SCALE_FACTOR_TOOLTIP = "Scaling factor for face detection.\nLarger values detect smaller faces, \
@@ -66,6 +68,8 @@ APPLY_FACE_EFFECTS_TOOLTIP = "Enable or disable funny face effects like beards a
 AUTO_CONFIG_ADJUSTING_TOOLTIP = "Automatically adjust detection parameters based on many factors."
 
 EXPORT_SMILE_FRAMES_TOOLTIP = "Save frames as images when smiles are detected."
+
+SMILE_FRAMES_PATH_TOOLTIP = "Directory where detected smile frames will be saved"
 
 
 # Main program

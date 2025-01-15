@@ -10,7 +10,7 @@ class SmileDetector(ExpressionDetector):
     SMILE_TEXT_DURATION = 2.0  # Duration to show counted text
 
     def __init__(self, config):
-        super().__init__()  # Remove config parameter from super().__init__()
+        super().__init__()  # 
         self.config = config
         self.config_handler = ConfigHandler()
         self.config_handler.add_observer(self)

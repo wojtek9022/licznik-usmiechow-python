@@ -1,5 +1,6 @@
 from typing import Any, Dict, Union, Tuple
 from dataclasses import dataclass
+import os
 
 class ValidationError(Exception):
     """Custom exception for validation errors."""
@@ -102,6 +103,12 @@ class OptionsValidator:
                 type=bool,
                 error_message="Export smile frames must be True or False"
             ),
+            'SMILE_FRAMES_PATH': ValidationRule(
+                min_value=None,
+                max_value=None,
+                type=str,
+                error_message="Invalid directory path"
+            ),
         }
 
     def validate_value(self, value: Any, option_type: type) -> bool:
@@ -121,13 +128,22 @@ class OptionsValidator:
             
         rule = self.validation_rules[option_name]
         
+        # Special handling for paths
+        if option_name == 'SMILE_FRAMES_PATH':
+            if not value:
+                return False, "Path cannot be empty"
+            if not self.validate_path(value):
+                return False, "Invalid or inaccessible directory path"
+            return True, ""
+            
         if rule.type == bool:
             return True, ""
             
         try:
             numeric_value = rule.type(value)
-            if numeric_value < rule.min_value or numeric_value > rule.max_value:
-                return False, rule.error_message
+            if rule.min_value is not None and rule.max_value is not None:
+                if numeric_value < rule.min_value or numeric_value > rule.max_value:
+                    return False, rule.error_message
             return True, ""
         except ValueError:
             return False, f"Invalid value for {option_name}"
@@ -157,3 +173,14 @@ class OptionsValidator:
             return True, ""
         except ValueError:
             return False, f"Invalid type: expected {expected_type.__name__}"
+
+    def validate_path(self, path: str) -> bool:
+        """Validate if directory path exists or can be created."""
+        try:
+            path = os.path.expanduser(path)
+            if os.path.exists(path):
+                return os.path.isdir(path)
+            parent_dir = os.path.dirname(path)
+            return os.path.exists(parent_dir) and os.access(parent_dir, os.W_OK)
+        except Exception:
+            return False

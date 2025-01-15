@@ -34,8 +34,10 @@ LANGUAGE_TEXT = "Język:"
 DEBUG_MODE_TEXT = "Tryb debugowania"
 CAMERA_SOURCE_TEXT = "Źródło kamery:"
 APPLY_FACE_EFFECTS_TEXT = "Efekty na twarzy"
-EXPORT_SMILE_FRAMES_TEXT = "Eksportuj klatki z uśmiechem"
+EXPORT_SMILE_FRAMES_TEXT = "Zapisz wykryte uśmiechy"
 AUTO_CONFIG_ADJUSTING_TEXT = "Automatyczne dostosowanie ustawień (eksperymentalne)"
+SMILE_FRAMES_PATH_TEXT = "Katalog klatek z wykrytymi uśmiechami"
+SELECT_DIRECTORY_TEXT = "Wybierz katalog"
 
 # Tooltips in options window
 FACE_SCALE_FACTOR_TOOLTIP = "Współczynnik skalowania dla wykrywania twarzy.\nWiększe wartości wykrywają mniejsze twarze, \
@@ -67,6 +69,8 @@ APPLY_FACE_EFFECTS_TOOLTIP = "Włącz lub wyłącz zabawne efekty na twarzy jak 
 AUTO_CONFIG_ADJUSTING_TOOLTIP = "Automatycznie dostosuj parametry wykrywania w zależności od wielu czynników."
 
 EXPORT_SMILE_FRAMES_TOOLTIP = "Zapisuj klatki jako obrazy gdy wykryto uśmiech."
+
+SMILE_FRAMES_PATH_TOOLTIP = "Katalog, w którym będą zapisywane klatki z wykrytym uśmiechem"
 
 # Main program
 DETECTED_SMILES_TEXT = "Wykryte uśmiechy: {count}"
