@@ -34,6 +34,7 @@ LANGUAGE_TEXT = "Język:"
 DEBUG_MODE_TEXT = "Tryb debugowania"
 CAMERA_SOURCE_TEXT = "Źródło kamery:"
 APPLY_FACE_EFFECTS_TEXT = "Efekty na twarzy"
+EXPORT_SMILE_FRAMES_TEXT = "Eksportuj klatki z uśmiechem"
 AUTO_CONFIG_ADJUSTING_TEXT = "Automatyczne dostosowanie ustawień (eksperymentalne)"
 
 # Tooltips in options window
@@ -64,6 +65,8 @@ DEBUG_MODE_TOOLTIP = "Pokaż prostokąty detekcji i dodatkowe informacje debugow
 APPLY_FACE_EFFECTS_TOOLTIP = "Włącz lub wyłącz zabawne efekty na twarzy jak brody i wąsy."
 
 AUTO_CONFIG_ADJUSTING_TOOLTIP = "Automatycznie dostosuj parametry wykrywania w zależności od wielu czynników."
+
+EXPORT_SMILE_FRAMES_TOOLTIP = "Zapisuj klatki jako obrazy gdy wykryto uśmiech."
 
 # Main program
 DETECTED_SMILES_TEXT = "Wykryte uśmiechy: {count}"

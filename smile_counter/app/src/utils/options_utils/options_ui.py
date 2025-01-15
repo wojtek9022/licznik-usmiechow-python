@@ -128,7 +128,7 @@ class OptionsUI:
         #FIXME: This should be more generic
         if option_name == 'CAMERA_SOURCE':
             entry = self._create_camera_combobox(option_name, value, row, parent)
-        elif option_name == 'DEBUG_MODE' or option_name == 'APPLY_FACE_EFFECTS' or option_name == 'AUTO_CONFIG_ADJUSTING':
+        elif option_name == 'DEBUG_MODE' or option_name == 'APPLY_FACE_EFFECTS' or option_name == 'AUTO_CONFIG_ADJUSTING' or option_name == 'EXPORT_SMILE_FRAMES':
             var = tk.BooleanVar(value=value)  # Convert to bool
             self.vars[option_name] = var  # Store var reference
             entry = tk.Checkbutton(
@@ -222,7 +222,7 @@ class OptionsUI:
 
     # FIXME: This method should be more generic
     def get_value(self, option_name: str) -> Any:
-        if option_name in ('DEBUG_MODE', 'APPLY_FACE_EFFECTS', 'AUTO_CONFIG_ADJUSTING'):
+        if option_name in ('DEBUG_MODE', 'APPLY_FACE_EFFECTS', 'AUTO_CONFIG_ADJUSTING', 'EXPORT_SMILE_FRAMES'):
             return bool(self.vars[option_name].get())
         elif option_name == 'CAMERA_SOURCE':
             return self.entries[option_name].camera_indices[self.entries[option_name].get()]

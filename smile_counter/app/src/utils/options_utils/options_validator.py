@@ -95,7 +95,13 @@ class OptionsValidator:
                 max_value=10,
                 type=int,
                 error_message="Invalid camera source"
-            )
+            ),
+            'EXPORT_SMILE_FRAMES': ValidationRule(
+                min_value=0,
+                max_value=1,
+                type=bool,
+                error_message="Export smile frames must be True or False"
+            ),
         }
 
     def validate_value(self, value: Any, option_type: type) -> bool:
