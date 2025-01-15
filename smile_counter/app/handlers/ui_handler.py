@@ -31,7 +31,10 @@ class UIHandler:
     """
 
     def __init__(self, master: tk.Tk) -> None:
+        """Initialize UI Handler"""
         self.master = master
+        self.language = lang_pl
+        self._setup_window_properties()
         self.config_handler = ConfigHandler()
         self.language = self._load_language()
         
@@ -50,6 +53,19 @@ class UIHandler:
         
         self._setup_main_window()
         self._load_images()
+
+    def _setup_window_properties(self) -> None:
+        """Setup main window size and scaling properties"""
+        self.master.title(self.language.TITLE_TEXT)
+        # Set initial window size
+        self.master.geometry("800x800")
+        # Set minimum window size
+        self.master.minsize(800, 700)
+        
+        # Configure window scaling
+        self.master.grid_rowconfigure(0, weight=1)
+        self.master.grid_columnconfigure(0, weight=1)
+        self.master.grid_columnconfigure(1, weight=1)
 
     def start_video(self) -> None:
         """Initialize and start video handling"""
