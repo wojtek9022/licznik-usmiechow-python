@@ -10,6 +10,7 @@ from ..src.detectors.smile_detector import SmileDetector
 from ..src.detectors.face_detector import FaceDetector
 from ..src.utils.video_frame_utils.video_capture_wrapper import VideoCaptureWrapper
 from ..src.utils.video_frame_utils.effects_handler import EffectsHandler
+from app.src.utils.video_frame_utils.frame_export_handler import FrameExportHandler
 
 # Suppress OpenCV warnings
 logging.getLogger("cv2").setLevel(logging.ERROR)
@@ -44,6 +45,7 @@ class VideoHandler:
         self.video_frame = None
         self.canvas = None
         self.master.bind('<Escape>', self._handle_escape)
+        self.frame_export_handler = FrameExportHandler()
 
     def on_config_changed(self, new_config):
         """Handle config changes"""
@@ -100,6 +102,11 @@ class VideoHandler:
     def _process_frame(self, frame: cv2.Mat) -> None:
         """Process frame for expression detection and effects."""
         processed_frame = self.expression_handler.process_frame(frame)
+        
+        # If smile was just counted, export the frame
+        if hasattr(self.smile_detector, 'smile_just_counted') and self.smile_detector.smile_just_counted:
+            self.frame_export_handler.export_frame(processed_frame)
+            self.smile_detector.smile_just_counted = False
         
         # Apply effects if faces were detected
         if hasattr(self.expression_handler, 'face_detector'):

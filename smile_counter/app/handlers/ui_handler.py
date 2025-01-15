@@ -8,6 +8,7 @@ from .button_handler import ButtonHandler
 from .video_handler import VideoHandler
 from .options_handler import OptionsHandler
 from .statistics_handler import StatisticsHandler
+from app.src.utils.config_utils.version_handler import VersionHandler
 
 class UIHandler:
     # FIXME: Refactor this class, Its too long
@@ -43,6 +44,9 @@ class UIHandler:
         self.options_handler = OptionsHandler(self.master, self.language)  # Changed from options to options_handler
         self.video_handler = None
         self.statistics_handler = StatisticsHandler(self.master, self.language)
+        
+        # Add after other initializations
+        self.version = VersionHandler.get_version()
         
         # Setup UI components
         self.header = None
@@ -156,7 +160,7 @@ class UIHandler:
         """Update all UI components with new language."""
         self.master.title(self.language.TITLE_TEXT)
         self.header.config(text=self.language.TITLE_TEXT)
-        self.subtitle.config(text=self.language.VERSION_TEXT)
+        self.subtitle.config(text=self.language.VERSION_TEXT.format(version=self.version))
         self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
         self.button_handler.update_buttons(self.language)
         self.options_handler.update_language(self.language)  # Changed from options to options_handler
@@ -193,7 +197,7 @@ class UIHandler:
         """
         self.header: tk.Label = tk.Label(self.master, text=self.language.TITLE_TEXT, font=("Helvetica", 24))
         self.header.pack(pady=20)
-        self.subtitle: tk.Label = tk.Label(self.master, text=self.language.VERSION_TEXT, font=("Helvetica", 12))
+        self.subtitle: tk.Label = tk.Label(self.master, text=self.language.VERSION_TEXT.format(version=self.version), font=("Helvetica", 12))
         self.subtitle.pack(pady=5)
         self.logo_label = self._load_logo()
         return self.header, self.subtitle, self.logo_label
@@ -240,7 +244,8 @@ class UIHandler:
     def _refresh_ui(self) -> None:
         self.master.title(self.language.TITLE_TEXT)
         self.header.config(text=self.language.TITLE_TEXT)
-        self.subtitle.config(text=self.language.VERSION_TEXT)
+        # Use format to insert version
+        self.subtitle.config(text=self.language.VERSION_TEXT.format(version=self.version))
         self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
         self.button_handler.update_buttons(self.language)
         self.options.update_language(self.language)  # Use direct update method
@@ -288,7 +293,7 @@ class UIHandler:
         self.language = language
         self.master.title(self.language.TITLE_TEXT)
         self.header.config(text=self.language.TITLE_TEXT)
-        self.subtitle.config(text=self.language.VERSION_TEXT)
+        self.subtitle.config(text=self.language.VERSION_TEXT.format(version=self.version))
         self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
         self.button_handler.update_buttons(self.language)
         
@@ -311,7 +316,7 @@ class UIHandler:
         self.language = language
         self.master.title(self.language.TITLE_TEXT)
         self.header.config(text=self.language.TITLE_TEXT)
-        self.subtitle.config(text=self.language.VERSION_TEXT)
+        self.subtitle.config(text=self.language.VERSION_TEXT.format(version=self.version))
         self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
         self.button_handler.update_buttons(self.language)
         self._update_options_if_exists(language)
