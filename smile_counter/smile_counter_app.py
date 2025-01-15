@@ -20,6 +20,7 @@ class SmileCounterApp:
         self.ui_handler.create_main_menu(
             self.start_video,
             self.show_options,
+            self.show_statistics,
             self.on_closing
         )
 
@@ -39,6 +40,10 @@ class SmileCounterApp:
     def show_options(self) -> None:
         """Show options window through UIHandler."""
         self.ui_handler.show_options()
+
+    def show_statistics(self) -> None:
+        """Show statistics window."""
+        self.ui_handler.show_statistics()
 
 if __name__ == "__main__":
     root = tk.Tk()

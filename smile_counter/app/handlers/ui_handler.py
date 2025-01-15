@@ -7,6 +7,7 @@ from .config_handler import ConfigHandler
 from .button_handler import ButtonHandler
 from .video_handler import VideoHandler
 from .options_handler import OptionsHandler
+from .statistics_handler import StatisticsHandler
 
 class UIHandler:
     # FIXME: Refactor this class, Its too long
@@ -38,6 +39,7 @@ class UIHandler:
         self.button_handler = ButtonHandler(self.master, self.language)
         self.options_handler = OptionsHandler(self.master, self.language)  # Changed from options to options_handler
         self.video_handler = None
+        self.statistics_handler = StatisticsHandler(self.master, self.language)
         
         # Setup UI components
         self.header = None
@@ -67,6 +69,10 @@ class UIHandler:
     def show_options(self) -> None:
         """Show options configuration window"""
         self.options_handler.show_options()
+
+    def show_statistics(self) -> None:
+        """Show statistics window"""
+        self.statistics_handler.show_statistics()
 
     def _load_language(self) -> object:
         """Load language based on config or default to English."""
@@ -183,12 +189,14 @@ class UIHandler:
         self.button_handler.update_buttons(self.language)
         self.options.update_language(self.language)  # Use direct update method
 
-    def create_main_menu(self, start_video_callback: Callable, show_options_callback: Callable, exit_callback: Callable) -> None:
+    def create_main_menu(self, start_video_callback: Callable, show_options_callback: Callable, 
+                        show_statistics_callback: Callable, exit_callback: Callable) -> None:
         """Create and display the main menu interface."""
         self.header, self.subtitle, self.logo_label = self.create_header()
         self.button_frame = self.button_handler.create_buttons(
             start_video_callback,
             show_options_callback,
+            show_statistics_callback,
             exit_callback
         )
         self.language_frame = self.create_language_buttons(self.change_language)

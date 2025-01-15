@@ -6,6 +6,15 @@ OPTIONS_BUTTON_TEXT = "Opcje"
 EXIT_BUTTON_TEXT = "Wyjście"
 LOGO_NOT_FOUND_TEXT = "[Logo nie znaleziono]"
 
+# Statistics window
+STATISTICS_BUTTON_TEXT = "Statystyki"
+STATISTICS_TITLE_TEXT = "Statystyki Uśmiechów"
+TOTAL_SMILES_TEXT = "Łączna liczba uśmiechów:"
+TODAY_SMILES_TEXT = "Uśmiechy dziś:" 
+WEEK_SMILES_TEXT = "Uśmiechy w tym tygodniu:"
+MONTH_SMILES_TEXT = "Uśmiechy w tym miesiącu:"
+YEAR_SMILES_TEXT = "Uśmiechy w tym roku:"
+
 # Options window
 OPTIONS_TITLE_TEXT = "Opcje"
 FACE_SCALE_FACTOR_TEXT = "Współczynnik skali twarzy:"
