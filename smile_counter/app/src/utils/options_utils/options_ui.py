@@ -73,6 +73,28 @@ class OptionsUI:
             
         self.window = tk.Toplevel(self.master)
         self.window.title(self.language.OPTIONS_TITLE_TEXT)
+        self.window.transient(self.master)
+        # Avoid creating empty window while loading the options
+        self.window.withdraw()  # Hide window initially
+        
+        # Wait until window is ready to get its size
+        self.window.update_idletasks()
+        
+        # Calculate center position relative to main window
+        main_window_x = self.master.winfo_x()
+        main_window_y = self.master.winfo_y()
+        main_window_width = self.master.winfo_width()
+        main_window_height = self.master.winfo_height()
+        
+        window_width = 700  # Set desired width
+        window_height = 600  # Set desired height
+        
+        # Calculate position to center over main window
+        x = main_window_x + (main_window_width - window_width) // 2
+        y = main_window_y + (main_window_height - window_height) // 3  # Position slightly above center
+        
+        # Set window size and position
+        self.window.geometry(f"{window_width}x{window_height}+{x}+{y}")
         
         # Create main frame for entries
         main_frame = tk.Frame(self.window)
@@ -90,6 +112,11 @@ class OptionsUI:
         
         # Create save button in bottom frame
         self._create_save_button(save_callback, button_frame)
+        
+        # Show window after everything is ready
+        self.window.update_idletasks()  # Make sure all widgets are ready
+        self.window.deiconify()  # Show window
+        self.window.grab_set()  # Set modal state after showing
 
     def _create_entries(self, config_options: OptionsConfig, values: Dict[str, Any], parent: tk.Frame) -> None:
         """Create entry fields for each configuration option."""
@@ -147,6 +174,8 @@ class OptionsUI:
             entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
             
             def select_directory():
+                # Temporarily release grab to allow directory dialog
+                self.window.grab_release()
                 directory = filedialog.askdirectory(
                     initialdir=entry.get(),
                     title=self.language.SELECT_DIRECTORY_TEXT
@@ -155,6 +184,10 @@ class OptionsUI:
                     entry.delete(0, tk.END)
                     entry.insert(0, directory)
                     self._validate_entry(option_name)
+                # Restore window focus and grab
+                self.window.grab_set()
+                self.window.focus_force()
+                self.window.lift()
             
             select_btn = tk.Button(
                 entry_frame,
