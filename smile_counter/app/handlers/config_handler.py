@@ -20,7 +20,7 @@ class ConfigHandler:
 
     _instance = None
     
-    # FIXME: This is required when adding new options to the config
+    # FIXME: This is crucial and required when adding new options to the config
     # should depend on options themself and passed, not in the config_handler
     OPTION_TYPES = {
         'FACE_SCALE_FACTOR': float,
@@ -31,6 +31,7 @@ class ConfigHandler:
         'COUNTED_SMILE_COOLDOWN_TIME': float,
         'DEBUG_MODE': bool,
         'APPLY_FACE_EFFECTS': bool,
+        'EXPORT_SMILE_FRAMES': bool,
         'AUTO_CONFIG_ADJUSTING': bool
     }
 

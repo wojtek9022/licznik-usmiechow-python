@@ -102,7 +102,7 @@ class VideoHandler:
     def _process_frame(self, frame: cv2.Mat) -> None:
         """Process frame for expression detection and effects."""
         processed_frame = self.expression_handler.process_frame(frame)
-        
+
         # If smile was just counted, export the frame
         if hasattr(self.smile_detector, 'smile_just_counted') and self.smile_detector.smile_just_counted:
             self.frame_export_handler.export_frame(processed_frame)
@@ -117,6 +117,7 @@ class VideoHandler:
                 processed_frame = self.effects_handler.apply_random_effect(
                     processed_frame, face_coords
                 )
+
         
         self._display_frame(processed_frame)
 

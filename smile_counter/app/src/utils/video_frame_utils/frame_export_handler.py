@@ -7,7 +7,14 @@ class FrameExportHandler:
     """Handles exporting frames when smiles are detected."""
     
     def __init__(self):
-        self.config = ConfigHandler().get_config()
+        self.config_handler = ConfigHandler()
+        self.config_handler.add_observer(self)
+        self.config = self.config_handler.get_config()
+        self.export_dir = self._setup_export_directory()
+
+    def on_config_changed(self, new_config):
+        """Handle config changes"""
+        self.config = new_config
         self.export_dir = self._setup_export_directory()
 
     def _setup_export_directory(self) -> str:
