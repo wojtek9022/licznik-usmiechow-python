@@ -72,34 +72,15 @@ class UIHandler:
         self.master.grid_columnconfigure(1, weight=1)
 
     def start_video(self) -> None:
-        """Initialize and start video handling"""
-        # Create loading label
-        loading_frame = tk.Frame(self.master)
-        loading_frame.place(relx=0.02, rely=0.95, anchor="sw")
-        
-        loading_text = self.language.VIDEO_LOADING_TEXT if hasattr(self.language, 'VIDEO_LOADING_TEXT') else "Starting camera, please wait..."
-        loading_label = tk.Label(
-            loading_frame, 
-            text=loading_text,
-            font=("Helvetica", 12, "bold"),
-            fg="green"
-        )
-        loading_label.pack(pady=10, padx=2)
-
-        # Update GUI to show loading message
-        self.master.update()
-
-        # Initialize video handler
+        """Start video capture mode."""
+        ConfigHandler().get_config()  # Force config reload
         if not self.video_handler:
             self.video_handler = VideoHandler(
-                self.master,
-                self.language,
-                self
+                master=self.master,
+                language=self.language,  # Add language parameter
+                ui_handler=self
             )
         self.video_handler.start_video()
-
-        # Remove loading message
-        loading_frame.destroy()
 
     def cleanup(self) -> None:
         """Clean up resources before closing"""

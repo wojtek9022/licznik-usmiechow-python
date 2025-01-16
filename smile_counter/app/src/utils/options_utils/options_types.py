@@ -33,4 +33,3 @@ class OptionsConfig(TypedDict):
     SMILE_SCALE_FACTOR: ConfigOption
     SMILE_MIN_NEIGHBOURS: ConfigOption
     TIME_TO_START_COUNTING: ConfigOption
-    EXPORT_SMILE_FRAMES: ConfigOption

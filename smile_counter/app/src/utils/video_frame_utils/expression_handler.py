@@ -57,6 +57,7 @@ class ExpressionHandler:
                     adjusted_smiles, 
                     face_coords=(face_x, face_y)
                 )
+                self.smile_detector.smile_just_counted = True
                 smile_detected = True
                 
                 # Start counting time when smile first detected
@@ -70,6 +71,7 @@ class ExpressionHandler:
             
         if not smile_detected:
             self.continuous_smile_start = 0  # Reset timer when smile breaks
+            self.smile_detector.smile_just_counted = False
             self.smile_detector.handle_smile(False)
                 
         return frame
