@@ -21,6 +21,23 @@ class SmileDetector(ExpressionDetector):
         self.show_counted_text = False
         self.counted_text_timestamp = 0
         self.smile_counted = False
+        self.observers = []
+        self.current_smile_status = False
+
+    def add_observer(self, observer):
+        self.observers.append(observer)
+
+    def remove_observer(self, observer):
+        self.observers.remove(observer)
+
+    def notify_observers(self):
+        for observer in self.observers:
+            observer.on_smile_status_changed(self.current_smile_status)
+
+    def update_smile_status(self, smile_detected: bool):
+        if self.current_smile_status != smile_detected:
+            self.current_smile_status = smile_detected
+            self.notify_observers()
 
     def on_config_changed(self, new_config):
         """Handle config changes"""
@@ -84,7 +101,7 @@ class SmileDetector(ExpressionDetector):
     def draw_counted_text(self, canvas, language) -> None:
         """Draw smile counter text overlay."""
         # Display total smiles count
-        text_to_show = language.DETECTED_SMILES_TEXT.format(count=self.smiles_detected)
+        text_to_show = language.DETECTED_SMILES_TEXT.format(count=int(self.config.TOTAL_SMILES_DETECTED))
         canvas.create_text(10, 10, anchor=tk.NW, text=text_to_show, 
                          fill="red", font=("Helvetica", 16))
 

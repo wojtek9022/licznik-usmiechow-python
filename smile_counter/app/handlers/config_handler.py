@@ -168,21 +168,18 @@ class ConfigHandler:
         return type('Config', (), {**settings, 'FONT': font})
         
     def update_config(self, updates: Dict[str, Any]) -> None:
-        """
-        Update configuration with new values.
-
-        Writes changes to configuration file and ensures persistence
-        of updated values.
-
-        Args:
-            updates (Dict[str, Any]): Dictionary of configuration updates
-                                    where keys match config option names
-        """
+        """Update configuration with new values."""
         self.config.read(self.config_path)
+        
+        # Always sync total smiles with log file before any updates
+        total_smiles = self._count_total_smiles()
+        self.config.set('Settings', 'TOTAL_SMILES_DETECTED', str(total_smiles))
+        
         for key, value in updates.items():
             self.config.set('Settings', key, str(value))
+            
         self._save_config()
-        self.notify_observers()  # Notify after config update
+        self.notify_observers()
 
     def add_observer(self, observer):
         """Add observer to be notified of config changes"""
@@ -207,6 +204,11 @@ class ConfigHandler:
         except FileNotFoundError:
             return 0
 
+    def sync_smile_counts(self) -> None:
+        """Sync smile counts between log file and config"""
+        total = self._count_total_smiles()
+        self.update_config({'TOTAL_SMILES_DETECTED': str(total)})
+
     def _update_total_smiles(self) -> None:
         """Update total smiles in config"""
         total = self._count_total_smiles()
@@ -219,3 +221,22 @@ class ConfigHandler:
         with open(self.smile_log_path, 'a', encoding='utf-8') as f:
             f.write(f'[SMILE DETECTED] {timestamp}\n')
         self._update_total_smiles()
+
+    def remove_last_log_entries(self, count: int) -> None:
+        """Remove last N entries from smile detection log and update total count."""
+        try:
+            # Read all lines from log file
+            with open(self.smile_log_path, 'r') as f:
+                lines = f.readlines()
+            
+            # Write back all lines except the last 'count' lines
+            with open(self.smile_log_path, 'w') as f:
+                f.writelines(lines[:-count])
+                
+            # Update total smiles count in config
+            self._update_total_smiles()
+                
+        except FileNotFoundError:
+            print(f"Log file not found at {self.smile_log_path}")
+        except Exception as e:
+            print(f"Error removing log entries: {e}")

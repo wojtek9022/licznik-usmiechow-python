@@ -172,8 +172,8 @@ class VideoHandler:
         )
         self.canvas.pack(fill=tk.BOTH, expand=True)
         
-        # Initialize auto config handler after canvas is created
-        self.auto_config_handler = AutoConfigAdjustingHandler(self.canvas)
+        # Initialize auto config handler with VideoHandler instance
+        self.auto_config_handler = AutoConfigAdjustingHandler(self)
 
     def _handle_calibration(self, event):
         if self.config.AUTO_CONFIG_ADJUSTING and self.auto_config_handler:
