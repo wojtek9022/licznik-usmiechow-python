@@ -41,9 +41,8 @@ SELECT_DIRECTORY_TEXT = "Wybierz katalog"
 
 # Calibration texts
 CALIBRATION_PROMPT_TEXT = "Wciśnij 'C' aby rozpocząć kalibrację parametrów"
-CALIBRATION_IN_PROGRESS_TEXT = "Kalibracja w toku\nProszę się uśmiechać 😊 i pozostać w jednym miejscu."
 CALIBRATION_SMILE_TEXT = "Kalibracja w toku\nProszę się uśmiechać 😊 i pozostać w jednym miejscu."
-CALIBRATION_NO_SMILE_TEXT = "Kalibracja w toku\n Proszę się teraz NIE ❌ uśmiechać"
+CALIBRATION_NO_SMILE_TEXT = "Kalibracja w toku\nProszę się teraz NIE ❌ uśmiechać"
 
 # Tooltips in options window
 FACE_SCALE_FACTOR_TOOLTIP = "Współczynnik skalowania dla wykrywania twarzy.\nWiększe wartości wykrywają mniejsze twarze, \

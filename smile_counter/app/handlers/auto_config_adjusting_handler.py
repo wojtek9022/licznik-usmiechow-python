@@ -7,11 +7,12 @@ from app.src.data.lang import lang_pl, lang_en
 
 class AutoConfigAdjustingHandler:
     CALIBRATION_TEXT_DURATION = 5.0  # Duration to show calibration prompt
-    CALIBRATION_DURATION = 20.0  # Duration of calibration process
-    PHASE_ONE_PERCENTAGE = 0.65  # First phase takes 65% of total time
-    NO_SMILE_THRESHOLD = 0.65  # Time without smile before adjusting
-    CONTINUOUS_SMILE_THRESHOLD = 0.65  # Time of continuous smile before adjusting
-    ADJUSTMENT_PERCENTAGE = 0.20  # adjustment factor
+    PHASE_DURATION = 6.0
+    PHASE_ONE_NO_SMILE_THRESHOLD = 0.60  # Longer threshold for phase 1
+    PHASE_TWO_NO_SMILE_THRESHOLD = 0.25  # Shorter threshold for phase 2
+    ADJUSTMENT_ADD_PERCENTAGE = 0.40
+    ADJUSTMENT_SUBTRACT_PERCENTAGE = 0.30
+    PHASE_START_WAIT_TIME = 1.5  # wait at phase start
 
     def __init__(self, canvas):
         self.config_handler = ConfigHandler()
@@ -48,10 +49,10 @@ class AutoConfigAdjustingHandler:
         
         if self.calibration_active:
             phase_text = (self.language.CALIBRATION_SMILE_TEXT 
-                         if self.calibration_phase == 1 
+                         if self.calibration_phase == 1 or self.calibration_phase == 3
                          else self.language.CALIBRATION_NO_SMILE_TEXT)
             
-            if self.calibration_phase == 1:
+            if self.calibration_phase == 1 or self.calibration_phase == 3:
                 self.canvas.create_text(
                     canvas_width // 2,
                     canvas_height // 2,
@@ -84,20 +85,17 @@ class AutoConfigAdjustingHandler:
 
     def start_calibration(self):
         if not self.calibration_active:
-            # Save current state
             self._save_original_config()
-            
-            # Initialize calibration
             self.calibration_active = True
             self.calibration_start_time = time.time()
-            self.calibration_end_time = self.calibration_start_time + self.CALIBRATION_DURATION
-            self.phase_one_end_time = self.calibration_start_time + (self.CALIBRATION_DURATION * self.PHASE_ONE_PERCENTAGE)
+            self.phase_one_end = self.calibration_start_time + self.PHASE_DURATION
+            self.calibration_end_time = self.phase_one_end + self.PHASE_DURATION
             self.calibration_phase = 1
             self.last_smile_state = False
             self.continuous_smile_start = time.time()
             self.no_smile_start = time.time()
-            
-            # Disable features during calibration
+            self.phase_one_start = self.calibration_start_time
+            self.phase_two_start = None
             self._disable_features_during_calibration()
 
     def _save_original_config(self):
@@ -127,29 +125,37 @@ class AutoConfigAdjustingHandler:
             return
 
         current_time = time.time()
-        elapsed_time = current_time - self.calibration_start_time
-        phase_one_duration = self.CALIBRATION_DURATION * self.PHASE_ONE_PERCENTAGE
-        
-        # Phase transition check using elapsed time
-        if self.calibration_phase == 1 and elapsed_time >= phase_one_duration:
+
+        # Phase transition
+        if self.calibration_phase == 1 and current_time >= self.phase_one_end:
             self.calibration_phase = 2
+            self.phase_two_start = current_time
             self.no_smile_start = current_time
             
         # Calibration end check
-        if elapsed_time >= self.CALIBRATION_DURATION:
+        if current_time >= self.calibration_end_time:
             self.calibration_active = False
             self._restore_original_config()
             return
 
-        # Phase-specific smile detection
+        # Wait time check for both phases
+        if (self.calibration_phase == 1 and 
+            current_time - self.phase_one_start <= self.PHASE_START_WAIT_TIME):
+            return
+            
+        if (self.calibration_phase == 2 and 
+            current_time - self.phase_two_start <= self.PHASE_START_WAIT_TIME):
+            return
+
+        # Phase-specific smile detection with different thresholds
         if self.calibration_phase == 1:
-            # Phase 1: Looking for smile
-            if not smile_detected and (current_time - self.no_smile_start > self.NO_SMILE_THRESHOLD):
+            # Phase 1: Looking for continuous smile with longer threshold
+            if not smile_detected and (current_time - self.no_smile_start > self.PHASE_ONE_NO_SMILE_THRESHOLD):
                 self._adjust_smile_min_neighbours(increase=False)
                 self.no_smile_start = current_time
         else:
-            # Phase 2: Looking for no smile
-            if smile_detected and (current_time - self.no_smile_start > self.NO_SMILE_THRESHOLD):
+            # Phase 2: Looking for no smile with shorter threshold
+            if smile_detected and (current_time - self.no_smile_start > self.PHASE_TWO_NO_SMILE_THRESHOLD):
                 self._adjust_smile_min_neighbours(increase=True)
                 self.no_smile_start = current_time
 
@@ -157,11 +163,16 @@ class AutoConfigAdjustingHandler:
 
     def _adjust_smile_min_neighbours(self, increase: bool):
         current_value = int(self.config.SMILE_MIN_NEIGHBOURS)
-        adjustment = max(1, int(current_value * self.ADJUSTMENT_PERCENTAGE))
         
         if increase:
+            # Make detection harder by increasing neighbors by 40%
+            adjustment = int(current_value * self.ADJUSTMENT_ADD_PERCENTAGE)
+            if adjustment < 2 : adjustment = 2
             new_value = current_value + adjustment
         else:
+            # Make detection easier by decreasing neighbors by 30%
+            adjustment = int(current_value * self.ADJUSTMENT_SUBTRACT_PERCENTAGE)
+            if adjustment < 2 : adjustment = 2
             new_value = max(1, current_value - adjustment)
             
         print(f"Adjusting SMILE_MIN_NEIGHBOURS from {current_value} to {new_value}")
