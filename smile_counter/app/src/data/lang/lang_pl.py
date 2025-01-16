@@ -39,6 +39,10 @@ AUTO_CONFIG_ADJUSTING_TEXT = "Automatyczne dostosowanie ustawień (eksperymental
 SMILE_FRAMES_PATH_TEXT = "Katalog klatek z wykrytymi uśmiechami"
 SELECT_DIRECTORY_TEXT = "Wybierz katalog"
 
+# Calibration texts
+CALIBRATION_PROMPT_TEXT = "Wciśnij 'C' aby rozpocząć kalibrację parametrów"
+CALIBRATION_IN_PROGRESS_TEXT = "Kalibracja w toku\nProszę się uśmiechać i pozostać w jednym miejscu."
+
 # Tooltips in options window
 FACE_SCALE_FACTOR_TOOLTIP = "Współczynnik skalowania dla wykrywania twarzy.\nWiększe wartości wykrywają mniejsze twarze, \
 ale zwiększają fałszywe detekcje.\nMa średni wpływ na całościową efektywność detekcji."
@@ -70,7 +74,7 @@ AUTO_CONFIG_ADJUSTING_TOOLTIP = "Automatycznie dostosuj parametry wykrywania w z
 
 EXPORT_SMILE_FRAMES_TOOLTIP = "Zapisuj klatki jako obrazy gdy wykryto uśmiech."
 
-SMILE_FRAMES_PATH_TOOLTIP = "Katalog, w którym będą zapisywane klatki z wykrytym uśmiechem"
+SMILE_FRAMES_PATH_TOOLTIP = "Katalog, w którym będą zapisywane klatki z wykrytym uśmiechem."
 
 # Main program
 DETECTED_SMILES_TEXT = "Wykryte uśmiechy: {count}"

@@ -39,6 +39,10 @@ EXPORT_SMILE_FRAMES_TEXT = "Export Detected Smile"
 SMILE_FRAMES_PATH_TEXT = "Detected Smile Frames Directory"
 SELECT_DIRECTORY_TEXT = "Select Directory"
 
+# Calibration texts
+CALIBRATION_PROMPT_TEXT = "Press 'C' to begin parameters calibration"
+CALIBRATION_IN_PROGRESS_TEXT = "Configuration in progress\nPlease keep smiling while standing still."
+
 # Tooltips in options window
 FACE_SCALE_FACTOR_TOOLTIP = "Scaling factor for face detection.\nLarger values detect smaller faces, \
 but increase false positives.\nHas moderate impact on overall detection efficiency."
@@ -69,7 +73,7 @@ AUTO_CONFIG_ADJUSTING_TOOLTIP = "Automatically adjust detection parameters based
 
 EXPORT_SMILE_FRAMES_TOOLTIP = "Save frames as images when smiles are detected."
 
-SMILE_FRAMES_PATH_TOOLTIP = "Directory where detected smile frames will be saved"
+SMILE_FRAMES_PATH_TOOLTIP = "Directory where detected smile frames will be saved."
 
 
 # Main program

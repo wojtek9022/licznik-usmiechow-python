@@ -3,18 +3,21 @@
 import time
 import tkinter as tk
 from app.handlers.config_handler import ConfigHandler
+from app.src.data.lang import lang_pl, lang_en
 
 class AutoConfigAdjustingHandler:
     CALIBRATION_TEXT_DURATION = 5.0  # Duration to show calibration prompt
     CALIBRATION_DURATION = 10.0  # Duration of calibration process
-    NO_SMILE_THRESHOLD = 1.5  # Time without smile before adjusting
-    CONTINUOUS_SMILE_THRESHOLD = 1.0  # Time of continuous smile before adjusting
-    ADJUSTMENT_PERCENTAGE = 0.10  # 10% adjustment factor
+    NO_SMILE_THRESHOLD = 0.35  # Time without smile before adjusting
+    CONTINUOUS_SMILE_THRESHOLD = 0.65  # Time of continuous smile before adjusting
+    ADJUSTMENT_PERCENTAGE = 0.40  # adjustment factor
 
     def __init__(self, canvas):
         self.config_handler = ConfigHandler()
-        self.config = ConfigHandler().get_config()
+        self.config_handler.add_observer(self)  # Register as observer
+        self.config = self.config_handler.get_config()
         self.canvas = canvas  # Store canvas reference
+        self.language = lang_pl if self.config.LANGUAGE == 'pl' else lang_en
         self.calibration_start_time = None
         self.show_calibration_text = True
         self.calibration_text_start = time.time()
@@ -24,6 +27,11 @@ class AutoConfigAdjustingHandler:
         self.no_smile_start = time.time()
         self.original_config_values = {}
         self.calibration_end_time = None
+
+    def on_config_changed(self, new_config):
+        """Handle configuration changes"""
+        self.config = new_config
+        self.language = lang_pl if self.config.LANGUAGE == 'pl' else lang_en
 
     def update_canvas(self, canvas):
         """Update canvas reference if needed"""
@@ -41,7 +49,7 @@ class AutoConfigAdjustingHandler:
                 canvas_width // 2,
                 canvas_height // 2,
                 anchor=tk.CENTER,
-                text="Configuration in progress\nPlease alternate between smiling and not smiling",
+                text=self.language.CALIBRATION_IN_PROGRESS_TEXT,
                 fill="yellow",
                 font=("Helvetica", 18, "bold")
             )
@@ -51,7 +59,7 @@ class AutoConfigAdjustingHandler:
                 10,  # X position
                 canvas_height - 30,  # Y position
                 anchor=tk.W,  # Left alignment
-                text="Press 'C' to begin parameters calibration",
+                text=self.language.CALIBRATION_PROMPT_TEXT,
                 fill="yellow",
                 font=("Helvetica", 16)
             )
