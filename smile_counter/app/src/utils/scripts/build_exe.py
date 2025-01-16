@@ -47,7 +47,7 @@ def build_exe():
     output_dir.mkdir(exist_ok=True)
     
     # Version info
-    VERSION = "3.3.0"
+    VERSION = "3.5.0"
     FILE_VERSION = VERSION.replace('.', ',')
     
     # Create version info
