@@ -41,7 +41,8 @@ SELECT_DIRECTORY_TEXT = "Select Directory"
 
 # Calibration texts
 CALIBRATION_PROMPT_TEXT = "Press 'C' to begin parameters calibration"
-CALIBRATION_IN_PROGRESS_TEXT = "Configuration in progress\nPlease keep smiling while standing still."
+CALIBRATION_SMILE_TEXT = "Calibration in progress\nPlease smile continuously 😊 while standing still."
+CALIBRATION_NO_SMILE_TEXT = "Calibration in progress\n Please do NOT smile now ❌"
 
 # Tooltips in options window
 FACE_SCALE_FACTOR_TOOLTIP = "Scaling factor for face detection.\nLarger values detect smaller faces, \

@@ -7,10 +7,11 @@ from app.src.data.lang import lang_pl, lang_en
 
 class AutoConfigAdjustingHandler:
     CALIBRATION_TEXT_DURATION = 5.0  # Duration to show calibration prompt
-    CALIBRATION_DURATION = 10.0  # Duration of calibration process
-    NO_SMILE_THRESHOLD = 0.35  # Time without smile before adjusting
+    CALIBRATION_DURATION = 20.0  # Duration of calibration process
+    PHASE_ONE_PERCENTAGE = 0.65  # First phase takes 65% of total time
+    NO_SMILE_THRESHOLD = 0.65  # Time without smile before adjusting
     CONTINUOUS_SMILE_THRESHOLD = 0.65  # Time of continuous smile before adjusting
-    ADJUSTMENT_PERCENTAGE = 0.40  # adjustment factor
+    ADJUSTMENT_PERCENTAGE = 0.20  # adjustment factor
 
     def __init__(self, canvas):
         self.config_handler = ConfigHandler()
@@ -27,6 +28,8 @@ class AutoConfigAdjustingHandler:
         self.no_smile_start = time.time()
         self.original_config_values = {}
         self.calibration_end_time = None
+        self.calibration_phase = 1  # Track current phase
+        self.phase_one_end_time = None
 
     def on_config_changed(self, new_config):
         """Handle configuration changes"""
@@ -44,15 +47,28 @@ class AutoConfigAdjustingHandler:
         current_time = time.time()
         
         if self.calibration_active:
-            # Display calibration in progress text
-            self.canvas.create_text(
-                canvas_width // 2,
-                canvas_height // 2,
-                anchor=tk.CENTER,
-                text=self.language.CALIBRATION_IN_PROGRESS_TEXT,
-                fill="yellow",
-                font=("Helvetica", 18, "bold")
-            )
+            phase_text = (self.language.CALIBRATION_SMILE_TEXT 
+                         if self.calibration_phase == 1 
+                         else self.language.CALIBRATION_NO_SMILE_TEXT)
+            
+            if self.calibration_phase == 1:
+                self.canvas.create_text(
+                    canvas_width // 2,
+                    canvas_height // 2,
+                    anchor=tk.CENTER,
+                    text=phase_text,
+                    fill="yellow",
+                    font=("Helvetica", 18, "bold")
+                    )
+            else:
+                    self.canvas.create_text(
+                    canvas_width // 2,
+                    canvas_height // 2,
+                    anchor=tk.CENTER,
+                    text=phase_text,
+                    fill="red",
+                    font=("Helvetica", 18, "bold")
+                    )
         elif current_time - self.calibration_text_start <= self.CALIBRATION_TEXT_DURATION or self.calibration_active == False:
             # Display calibration prompt
             self.canvas.create_text(
@@ -75,6 +91,8 @@ class AutoConfigAdjustingHandler:
             self.calibration_active = True
             self.calibration_start_time = time.time()
             self.calibration_end_time = self.calibration_start_time + self.CALIBRATION_DURATION
+            self.phase_one_end_time = self.calibration_start_time + (self.CALIBRATION_DURATION * self.PHASE_ONE_PERCENTAGE)
+            self.calibration_phase = 1
             self.last_smile_state = False
             self.continuous_smile_start = time.time()
             self.no_smile_start = time.time()
@@ -109,26 +127,30 @@ class AutoConfigAdjustingHandler:
             return
 
         current_time = time.time()
+        elapsed_time = current_time - self.calibration_start_time
+        phase_one_duration = self.CALIBRATION_DURATION * self.PHASE_ONE_PERCENTAGE
         
-        # Check if calibration time is over
-        if current_time >= self.calibration_end_time:
+        # Phase transition check using elapsed time
+        if self.calibration_phase == 1 and elapsed_time >= phase_one_duration:
+            self.calibration_phase = 2
+            self.no_smile_start = current_time
+            
+        # Calibration end check
+        if elapsed_time >= self.CALIBRATION_DURATION:
             self.calibration_active = False
             self._restore_original_config()
             return
 
-        if smile_detected:
-            if not self.last_smile_state:
-                self.continuous_smile_start = current_time
-            elif current_time - self.continuous_smile_start > self.CONTINUOUS_SMILE_THRESHOLD:
-                # Increase minimum neighbors if smiling too long
-                self._adjust_smile_min_neighbours(increase=True)
-                self.continuous_smile_start = current_time
-        else:
-            if self.last_smile_state:
-                self.no_smile_start = current_time
-            elif current_time - self.no_smile_start > self.NO_SMILE_THRESHOLD:
-                # Decrease minimum neighbors if not smiling for too long
+        # Phase-specific smile detection
+        if self.calibration_phase == 1:
+            # Phase 1: Looking for smile
+            if not smile_detected and (current_time - self.no_smile_start > self.NO_SMILE_THRESHOLD):
                 self._adjust_smile_min_neighbours(increase=False)
+                self.no_smile_start = current_time
+        else:
+            # Phase 2: Looking for no smile
+            if smile_detected and (current_time - self.no_smile_start > self.NO_SMILE_THRESHOLD):
+                self._adjust_smile_min_neighbours(increase=True)
                 self.no_smile_start = current_time
 
         self.last_smile_state = smile_detected

@@ -20,7 +20,7 @@ class SmileDetector(ExpressionDetector):
         self.last_smile_time = 0
         self.show_counted_text = False
         self.counted_text_timestamp = 0
-        self.smile_just_counted = False
+        self.smile_counted = False
 
     def on_config_changed(self, new_config):
         """Handle config changes"""
@@ -68,7 +68,7 @@ class SmileDetector(ExpressionDetector):
             
             self.smile_counted = True
             self.last_smile_time = current_time
-            self.smile_just_counted = True
+            self.smile_counted = True
             self.show_counted_text = True 
             self.counted_text_timestamp = current_time  
             self.smiles_detected += 1  
@@ -77,7 +77,7 @@ class SmileDetector(ExpressionDetector):
             
         if not smile_detected:
             self.smile_counted = False
-            self.smile_just_counted = False
+            self.smile_counted = False
             
         return False
 

@@ -118,7 +118,7 @@ class VideoHandler:
         processed_frame = self.expression_handler.process_frame(frame)
 
         # If smile was just counted, export the frame
-        if hasattr(self.smile_detector, 'smile_just_counted') and self.smile_detector.smile_just_counted:
+        if hasattr(self.smile_detector, 'smile_counted') and self.smile_detector.smile_counted:
             self.frame_export_handler.export_frame(processed_frame)
         
         # Apply effects if faces were detected
@@ -133,7 +133,7 @@ class VideoHandler:
         
         if self.config.AUTO_CONFIG_ADJUSTING:
             # Check for smile detection
-            smile_detected = self.smile_detector.smile_just_counted
+            smile_detected = self.smile_detector.smile_counted
             self.auto_config_handler.handle_smile_detection(smile_detected)
         
         self._display_frame(processed_frame)
