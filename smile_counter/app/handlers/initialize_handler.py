@@ -6,7 +6,7 @@ and validation of required resources before the main application starts.
 """
 
 import os
-from smile_counter.app.handlers.config_handler import ConfigHandler
+from app.handlers.config_handler import ConfigHandler
 from typing import Any
 
 def get_initialized_config() -> Any:
