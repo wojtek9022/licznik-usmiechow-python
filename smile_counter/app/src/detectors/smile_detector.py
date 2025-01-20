@@ -1,8 +1,12 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
+
 from .abstract_detectors.base_detector import ExpressionDetector
 import cv2
 import time
 from .cascade_loader import CascadeLoader
-from app.handlers.config_handler import ConfigHandler
+from smile_counter.app.handlers.config_handler import ConfigHandler
 import tkinter as tk
 
 class SmileDetector(ExpressionDetector):
@@ -10,7 +14,7 @@ class SmileDetector(ExpressionDetector):
     SMILE_TEXT_DURATION = 2.0  # Duration to show counted text
 
     def __init__(self, config):
-        super().__init__()  # 
+        super().__init__()  
         self.config = config
         self.config_handler = ConfigHandler()
         self.config_handler.add_observer(self)
