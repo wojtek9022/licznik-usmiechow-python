@@ -11,7 +11,9 @@ class EffectsHandler:
     """Handles applying visual effects to detected faces in frames."""
     
     def __init__(self):
-        self.config = ConfigHandler().get_config()
+        self.config_handler = ConfigHandler()
+        self.config_handler.add_observer(self)
+        self.config = self.config_handler.get_config()
         
         # Get current file's directory
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -32,6 +34,10 @@ class EffectsHandler:
             'mustache': self._apply_mustache_effect,
             'beard': self._apply_beard_effect
         }
+
+    def on_config_changed(self, new_config):
+        """Handle config changes"""
+        self.config = new_config
 
     def _load_effects(self) -> None:
         """Load effects from respective directories with verification."""

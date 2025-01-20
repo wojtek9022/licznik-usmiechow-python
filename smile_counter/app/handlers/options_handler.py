@@ -33,7 +33,9 @@ class OptionsHandler:
         'CAMERA_SOURCE': {'type': int, 'row': 7},
         'DEBUG_MODE': {'type': bool, 'row': 8},
         'APPLY_FACE_EFFECTS': {'type': bool, 'row':9},
-        'AUTO_CONFIG_ADJUSTING': {'type': bool, 'row': 10},
+        'EXPORT_SMILE_FRAMES': {'type': bool, 'row': 10},
+        'AUTO_CONFIG_ADJUSTING': {'type': bool, 'row': 11},
+        'SMILE_FRAMES_PATH': {'type': str, 'row': 12},
     }
 
     def __init__(self, master: tk.Tk, language: object) -> None:

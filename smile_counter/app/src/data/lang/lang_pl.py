@@ -1,10 +1,23 @@
 # Main menu
 TITLE_TEXT = "Licznik Uśmiechów"
-VERSION_TEXT = "Wersja: 3.1.0"
+VERSION_TEXT = "Wersja: {version}"
 START_BUTTON_TEXT = "Start"
 OPTIONS_BUTTON_TEXT = "Opcje"
 EXIT_BUTTON_TEXT = "Wyjście"
 LOGO_NOT_FOUND_TEXT = "[Logo nie znaleziono]"
+
+# Loading messages
+OPTIONS_LOADING_TEXT = "Ładowanie opcji, proszę czekać..."
+VIDEO_LOADING_TEXT = "Uruchamianie kamery, proszę czekać..."
+
+# Statistics window
+STATISTICS_BUTTON_TEXT = "Statystyki"
+STATISTICS_TITLE_TEXT = "Statystyki Uśmiechów"
+TOTAL_SMILES_TEXT = "Łączna liczba uśmiechów:"
+TODAY_SMILES_TEXT = "Uśmiechy dziś:" 
+WEEK_SMILES_TEXT = "Uśmiechy w tym tygodniu:"
+MONTH_SMILES_TEXT = "Uśmiechy w tym miesiącu:"
+YEAR_SMILES_TEXT = "Uśmiechy w tym roku:"
 
 # Options window
 OPTIONS_TITLE_TEXT = "Opcje"
@@ -21,7 +34,15 @@ LANGUAGE_TEXT = "Język:"
 DEBUG_MODE_TEXT = "Tryb debugowania"
 CAMERA_SOURCE_TEXT = "Źródło kamery:"
 APPLY_FACE_EFFECTS_TEXT = "Efekty na twarzy"
+EXPORT_SMILE_FRAMES_TEXT = "Zapisz wykryte uśmiechy"
 AUTO_CONFIG_ADJUSTING_TEXT = "Automatyczne dostosowanie ustawień (eksperymentalne)"
+SMILE_FRAMES_PATH_TEXT = "Katalog klatek z wykrytymi uśmiechami"
+SELECT_DIRECTORY_TEXT = "Wybierz katalog"
+
+# Calibration texts
+CALIBRATION_PROMPT_TEXT = "Wciśnij 'C' aby rozpocząć kalibrację parametrów"
+CALIBRATION_SMILE_TEXT = "Kalibracja w toku\nProszę się uśmiechać 😊 i pozostać w jednym miejscu."
+CALIBRATION_NO_SMILE_TEXT = "Kalibracja w toku\nProszę się teraz NIE ❌ uśmiechać"
 
 # Tooltips in options window
 FACE_SCALE_FACTOR_TOOLTIP = "Współczynnik skalowania dla wykrywania twarzy.\nWiększe wartości wykrywają mniejsze twarze, \
@@ -51,6 +72,10 @@ DEBUG_MODE_TOOLTIP = "Pokaż prostokąty detekcji i dodatkowe informacje debugow
 APPLY_FACE_EFFECTS_TOOLTIP = "Włącz lub wyłącz zabawne efekty na twarzy jak brody i wąsy."
 
 AUTO_CONFIG_ADJUSTING_TOOLTIP = "Automatycznie dostosuj parametry wykrywania w zależności od wielu czynników."
+
+EXPORT_SMILE_FRAMES_TOOLTIP = "Zapisuj klatki jako obrazy gdy wykryto uśmiech."
+
+SMILE_FRAMES_PATH_TOOLTIP = "Katalog, w którym będą zapisywane klatki z wykrytym uśmiechem."
 
 # Main program
 DETECTED_SMILES_TEXT = "Wykryte uśmiechy: {count}"

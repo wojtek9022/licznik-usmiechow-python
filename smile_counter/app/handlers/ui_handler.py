@@ -7,6 +7,8 @@ from .config_handler import ConfigHandler
 from .button_handler import ButtonHandler
 from .video_handler import VideoHandler
 from .options_handler import OptionsHandler
+from .statistics_handler import StatisticsHandler
+from app.src.utils.config_utils.version_handler import VersionHandler
 
 class UIHandler:
     # FIXME: Refactor this class, Its too long
@@ -30,7 +32,10 @@ class UIHandler:
     """
 
     def __init__(self, master: tk.Tk) -> None:
+        """Initialize UI Handler"""
         self.master = master
+        self.language = lang_pl
+        self._setup_window_properties()
         self.config_handler = ConfigHandler()
         self.language = self._load_language()
         
@@ -38,6 +43,10 @@ class UIHandler:
         self.button_handler = ButtonHandler(self.master, self.language)
         self.options_handler = OptionsHandler(self.master, self.language)  # Changed from options to options_handler
         self.video_handler = None
+        self.statistics_handler = StatisticsHandler(self.master, self.language)
+        
+        # Add after other initializations
+        self.version = VersionHandler.get_version()
         
         # Setup UI components
         self.header = None
@@ -49,13 +58,27 @@ class UIHandler:
         self._setup_main_window()
         self._load_images()
 
+    def _setup_window_properties(self) -> None:
+        """Setup main window size and scaling properties"""
+        self.master.title(self.language.TITLE_TEXT)
+        # Set initial window size
+        self.master.geometry("800x800")
+        # Set minimum window size
+        self.master.minsize(800, 700)
+        
+        # Configure window scaling
+        self.master.grid_rowconfigure(0, weight=1)
+        self.master.grid_columnconfigure(0, weight=1)
+        self.master.grid_columnconfigure(1, weight=1)
+
     def start_video(self) -> None:
-        """Initialize and start video handling"""
+        """Start video capture mode."""
+        ConfigHandler().get_config()  # Force config reload
         if not self.video_handler:
             self.video_handler = VideoHandler(
-                self.master,
-                self.language,
-                self
+                master=self.master,
+                language=self.language,  # Add language parameter
+                ui_handler=self
             )
         self.video_handler.start_video()
 
@@ -65,8 +88,32 @@ class UIHandler:
             self.video_handler.stop_video()
 
     def show_options(self) -> None:
-        """Show options configuration window"""
+        """Show options configuration window with loading message"""
+        # Create loading label
+        loading_frame = tk.Frame(self.master)
+        loading_frame.place(relx=0.02, rely=0.95, anchor="sw")  # Position at bottom left
+        
+        loading_text = self.language.OPTIONS_LOADING_TEXT if hasattr(self.language, 'OPTIONS_LOADING_TEXT') else "Loading options, please wait..."
+        loading_label = tk.Label(
+            loading_frame, 
+            text=loading_text,
+            font=("Helvetica", 14, "bold"),
+            fg="blue"
+        )
+        loading_label.pack(pady=10, padx=2)
+
+        # Update GUI to show loading message
+        self.master.update()
+
+        # Show options window
         self.options_handler.show_options()
+
+        # Remove loading message
+        loading_frame.destroy()
+
+    def show_statistics(self) -> None:
+        """Show statistics window"""
+        self.statistics_handler.show_statistics()
 
     def _load_language(self) -> object:
         """Load language based on config or default to English."""
@@ -94,7 +141,7 @@ class UIHandler:
         """Update all UI components with new language."""
         self.master.title(self.language.TITLE_TEXT)
         self.header.config(text=self.language.TITLE_TEXT)
-        self.subtitle.config(text=self.language.VERSION_TEXT)
+        self.subtitle.config(text=self.language.VERSION_TEXT.format(version=self.version))
         self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
         self.button_handler.update_buttons(self.language)
         self.options_handler.update_language(self.language)  # Changed from options to options_handler
@@ -131,7 +178,7 @@ class UIHandler:
         """
         self.header: tk.Label = tk.Label(self.master, text=self.language.TITLE_TEXT, font=("Helvetica", 24))
         self.header.pack(pady=20)
-        self.subtitle: tk.Label = tk.Label(self.master, text=self.language.VERSION_TEXT, font=("Helvetica", 12))
+        self.subtitle: tk.Label = tk.Label(self.master, text=self.language.VERSION_TEXT.format(version=self.version), font=("Helvetica", 12))
         self.subtitle.pack(pady=5)
         self.logo_label = self._load_logo()
         return self.header, self.subtitle, self.logo_label
@@ -178,17 +225,20 @@ class UIHandler:
     def _refresh_ui(self) -> None:
         self.master.title(self.language.TITLE_TEXT)
         self.header.config(text=self.language.TITLE_TEXT)
-        self.subtitle.config(text=self.language.VERSION_TEXT)
+        # Use format to insert version
+        self.subtitle.config(text=self.language.VERSION_TEXT.format(version=self.version))
         self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
         self.button_handler.update_buttons(self.language)
         self.options.update_language(self.language)  # Use direct update method
 
-    def create_main_menu(self, start_video_callback: Callable, show_options_callback: Callable, exit_callback: Callable) -> None:
+    def create_main_menu(self, start_video_callback: Callable, show_options_callback: Callable, 
+                        show_statistics_callback: Callable, exit_callback: Callable) -> None:
         """Create and display the main menu interface."""
         self.header, self.subtitle, self.logo_label = self.create_header()
         self.button_frame = self.button_handler.create_buttons(
             start_video_callback,
             show_options_callback,
+            show_statistics_callback,
             exit_callback
         )
         self.language_frame = self.create_language_buttons(self.change_language)
@@ -224,7 +274,7 @@ class UIHandler:
         self.language = language
         self.master.title(self.language.TITLE_TEXT)
         self.header.config(text=self.language.TITLE_TEXT)
-        self.subtitle.config(text=self.language.VERSION_TEXT)
+        self.subtitle.config(text=self.language.VERSION_TEXT.format(version=self.version))
         self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
         self.button_handler.update_buttons(self.language)
         
@@ -247,7 +297,7 @@ class UIHandler:
         self.language = language
         self.master.title(self.language.TITLE_TEXT)
         self.header.config(text=self.language.TITLE_TEXT)
-        self.subtitle.config(text=self.language.VERSION_TEXT)
+        self.subtitle.config(text=self.language.VERSION_TEXT.format(version=self.version))
         self.logo_label.config(text=self.language.LOGO_NOT_FOUND_TEXT)
         self.button_handler.update_buttons(self.language)
         self._update_options_if_exists(language)

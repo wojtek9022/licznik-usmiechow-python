@@ -5,11 +5,13 @@ from PIL import Image, ImageTk
 import tkinter as tk
 import time
 from .config_handler import ConfigHandler
+from .auto_config_adjusting_handler import AutoConfigAdjustingHandler
 from ..src.utils.video_frame_utils.expression_handler import ExpressionHandler
 from ..src.detectors.smile_detector import SmileDetector
 from ..src.detectors.face_detector import FaceDetector
 from ..src.utils.video_frame_utils.video_capture_wrapper import VideoCaptureWrapper
 from ..src.utils.video_frame_utils.effects_handler import EffectsHandler
+from app.src.utils.video_frame_utils.frame_export_handler import FrameExportHandler
 
 # Suppress OpenCV warnings
 logging.getLogger("cv2").setLevel(logging.ERROR)
@@ -29,7 +31,10 @@ class VideoHandler:
         self.config = self.config_handler.get_config()
         self.camera_source = int(self.config.CAMERA_SOURCE)
         
-        # Initialize detectors
+        self.video_frame = None
+        self.canvas = None
+        
+        # Initialize handlers
         self.face_detector = FaceDetector(self.config)
         self.smile_detector = SmileDetector(self.config)
         self.expression_handler = ExpressionHandler(
@@ -41,8 +46,16 @@ class VideoHandler:
         self.effects_handler = EffectsHandler()
         self.video_capture_wrapper = None
         self.running = False
-        self.video_frame = None
-        self.canvas = None
+        self.frame_export_handler = FrameExportHandler()
+        
+        # Initialize auto config handler
+        self.auto_config_handler = None  # Will be initialized after canvas setup
+        
+        # Bind calibration keys
+        self.master.bind('c', self._handle_calibration)
+        self.master.bind('C', self._handle_calibration)
+        
+        # Add ESC key binding
         self.master.bind('<Escape>', self._handle_escape)
 
     def on_config_changed(self, new_config):
@@ -83,10 +96,13 @@ class VideoHandler:
         self.update_frame()
 
     def stop_video(self) -> None:
-        """Stop video but don't release camera."""
+        """Stop video capture and cleanup resources"""
         self.running = False
-        if self.video_frame:
-            self.video_frame.destroy()
+        if self.video_capture_wrapper:
+            self.video_capture_wrapper.release()
+            self.video_capture_wrapper = None
+        if self.auto_config_handler:
+            self.auto_config_handler.reset_calibration()
 
     def update_frame(self) -> None:
         if not self.running:
@@ -100,6 +116,10 @@ class VideoHandler:
     def _process_frame(self, frame: cv2.Mat) -> None:
         """Process frame for expression detection and effects."""
         processed_frame = self.expression_handler.process_frame(frame)
+
+        # If smile was just counted, export the frame
+        if hasattr(self.smile_detector, 'smile_counted') and self.smile_detector.smile_counted:
+            self.frame_export_handler.export_frame(processed_frame)
         
         # Apply effects if faces were detected
         if hasattr(self.expression_handler, 'face_detector'):
@@ -111,6 +131,11 @@ class VideoHandler:
                     processed_frame, face_coords
                 )
         
+        if self.config.AUTO_CONFIG_ADJUSTING:
+            # Check for smile detection
+            smile_detected = self.smile_detector.smile_counted
+            self.auto_config_handler.handle_smile_detection(smile_detected)
+        
         self._display_frame(processed_frame)
 
     def _display_frame(self, frame: cv2.Mat) -> None:
@@ -119,13 +144,20 @@ class VideoHandler:
         imgtk = ImageTk.PhotoImage(image=img)
         self.canvas.create_image(0, 0, anchor=tk.NW, image=imgtk)
         self.canvas.imgtk = imgtk
+        if self.config.AUTO_CONFIG_ADJUSTING:
+            # Draw calibration text
+            canvas_width = self.canvas.winfo_width()
+            canvas_height = self.canvas.winfo_height()
+            self.auto_config_handler.draw_calibration_text(canvas_width, canvas_height)
         self.smile_detector.draw_counted_text(self.canvas, self.language)
 
     def _handle_escape(self, event) -> None:
-        """Handle ESC key press to stop video and restore menu."""
+        """Handle ESC key press - stop video and return to menu"""
         if self.running:
             self.stop_video()
-            self.ui_handler.show_main_menu()
+            if self.video_frame:
+                self.video_frame.destroy()
+            self.ui_handler.show_main_menu()  # Changed from show_menu to show_main_menu
 
     def _setup_video_frame(self) -> None:
         """Initialize video frame and canvas for display."""
@@ -139,3 +171,10 @@ class VideoHandler:
             bg='black'
         )
         self.canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # Initialize auto config handler with VideoHandler instance
+        self.auto_config_handler = AutoConfigAdjustingHandler(self)
+
+    def _handle_calibration(self, event):
+        if self.config.AUTO_CONFIG_ADJUSTING and self.auto_config_handler:
+            self.auto_config_handler.start_calibration()

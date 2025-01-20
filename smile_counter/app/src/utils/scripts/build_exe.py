@@ -47,7 +47,7 @@ def build_exe():
     output_dir.mkdir(exist_ok=True)
     
     # Version info
-    VERSION = "3.1.0"
+    VERSION = "3.5.1"
     FILE_VERSION = VERSION.replace('.', ',')
     
     # Create version info
@@ -99,6 +99,7 @@ VSVersionInfo(
         f"--name={APP_NAME}",  # Set executable name
         "--hidden-import=tkinter",
         "--hidden-import=tkinter.ttk",
+        "--hidden-import=tkinter.filedialog",
         "--hidden-import=PIL",
         "--hidden-import=cv2",
         "--hidden-import=PIL.Image",

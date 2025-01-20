@@ -1,3 +1,7 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
+
 from .abstract_detectors.base_detector import ExpressionDetector
 import cv2
 import time
@@ -6,9 +10,11 @@ from app.handlers.config_handler import ConfigHandler
 import tkinter as tk
 
 class SmileDetector(ExpressionDetector):
+    # FIXME: Magic number anti-pattern
     SMILE_TEXT_DURATION = 2.0  # Duration to show counted text
 
     def __init__(self, config):
+        super().__init__()  
         self.config = config
         self.config_handler = ConfigHandler()
         self.config_handler.add_observer(self)
@@ -18,6 +24,24 @@ class SmileDetector(ExpressionDetector):
         self.last_smile_time = 0
         self.show_counted_text = False
         self.counted_text_timestamp = 0
+        self.smile_counted = False
+        self.observers = []
+        self.current_smile_status = False
+
+    def add_observer(self, observer):
+        self.observers.append(observer)
+
+    def remove_observer(self, observer):
+        self.observers.remove(observer)
+
+    def notify_observers(self):
+        for observer in self.observers:
+            observer.on_smile_status_changed(self.current_smile_status)
+
+    def update_smile_status(self, smile_detected: bool):
+        if self.current_smile_status != smile_detected:
+            self.current_smile_status = smile_detected
+            self.notify_observers()
 
     def on_config_changed(self, new_config):
         """Handle config changes"""
@@ -58,42 +82,44 @@ class SmileDetector(ExpressionDetector):
                 
     def handle_smile(self, smile_detected: bool) -> bool:
         current_time = time.time()
-        cooldown_time = float(self.config.COUNTED_SMILE_COOLDOWN_TIME)
         
-        if smile_detected:
-            if not self.smile_active and (current_time - self.last_smile_time) > cooldown_time:
-                self.smiles_detected += 1
-                self.config_handler.log_smile()
-                self.smile_active = True
-                self.last_smile_time = current_time
-                self.show_counted_text = True
-                self.counted_text_timestamp = current_time
-                return True
-        else:
-            self.smile_active = False
+        if (smile_detected and 
+            not self.smile_counted and 
+            current_time - self.last_smile_time >= float(self.config.COUNTED_SMILE_COOLDOWN_TIME)):
+            
+            self.smile_counted = True
+            self.last_smile_time = current_time
+            self.smile_counted = True
+            self.show_counted_text = True 
+            self.counted_text_timestamp = current_time  
+            self.smiles_detected += 1  
+            self.config_handler.log_smile()
+            return True
+            
+        if not smile_detected:
+            self.smile_counted = False
+            self.smile_counted = False
+            
         return False
 
     def draw_counted_text(self, canvas, language) -> None:
-        """
-        Draw smile counter text overlay.
-        
-        Args:
-            canvas (tk.Canvas): Canvas to draw text on
-            language (object): Language strings
-        """
+        """Draw smile counter text overlay."""
         # Display total smiles count
-        text_to_show = language.DETECTED_SMILES_TEXT.format(count=self.smiles_detected)
+        text_to_show = language.DETECTED_SMILES_TEXT.format(count=int(self.config.TOTAL_SMILES_DETECTED))
         canvas.create_text(10, 10, anchor=tk.NW, text=text_to_show, 
                          fill="red", font=("Helvetica", 16))
 
         # Display "Smile Counted!" text
         if self.show_counted_text:
-            if time.time() - self.counted_text_timestamp > self.SMILE_TEXT_DURATION:
+            current_time = time.time()
+            if current_time - self.counted_text_timestamp > self.SMILE_TEXT_DURATION:
                 self.show_counted_text = False
             else:
+                canvas_width = canvas.winfo_width()
+                canvas_height = canvas.winfo_height()
                 canvas.create_text(
-                    canvas.winfo_width() // 2,
-                    canvas.winfo_height() // 2,
+                    canvas_width // 2,
+                    canvas_height // 2,
                     text=language.SMILE_COUNTED_TEXT,
                     fill="green",
                     font=("Helvetica", 32, "bold")
